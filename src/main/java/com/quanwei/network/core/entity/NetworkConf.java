@@ -1,4 +1,4 @@
-package com.quanwei.network.core;
+package com.quanwei.network.core.entity;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;

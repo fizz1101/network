@@ -1,18 +1,20 @@
-package com.quanwei.network.core;
+package com.quanwei.network.core.controller;
 
+import com.quanwei.network.core.util.ShellUtil;
+import com.quanwei.network.core.entity.Network;
+import com.quanwei.network.core.entity.NetworkConf;
+import com.quanwei.network.core.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 网卡设置
@@ -23,12 +25,57 @@ public class NetworkController {
 
     private Logger logger = LoggerFactory.getLogger(NetworkController.class);
 
+    private static final String ROUTEHEADERFILTER1 = "Kernel";
+    private static final String ROUTEHEADERFILTER2 = "Destination";
+
     /**
      * 获取网卡信息列表
      * @return
      */
-    @RequestMapping(value = "/get_network_list")
-    public Map<String, Object> getNetworkList() throws Exception {
+    @RequestMapping(value = "get_network_list")
+    public Map<String, Object> getNetworkList() {
+        int type = 1;
+        Object result = "";
+        try {
+            List<Map<String, Object>> netInfoList = new ArrayList<>();
+            Map<String, Object> netInfoMap = new HashMap<>();
+            List<String> list_file = ShellUtil.fileList(NetworkConf.path, NetworkConf.fileNameHeader, "lo|bak");
+            for (String fileName : list_file) {
+                String filePath = NetworkConf.path + File.separator + fileName;
+                String device = fileName.replace(NetworkConf.fileNameHeader, "");
+                Map<String, Object> infoMap = ShellUtil.readFile(filePath, NetworkConf.DEVICE,
+                        NetworkConf.IPADDR, NetworkConf.NETMASK, NetworkConf.GATEWAY);
+                //补全缺省字段
+                /*if (!infoMap.containsKey(NetworkConf.DEVICE)) {
+                    infoMap.put(NetworkConf.DEVICE, device);
+                }
+                if (!infoMap.containsKey(NetworkConf.IPADDR)) {
+                    infoMap.put(NetworkConf.IPADDR, "");
+                }
+                if (!infoMap.containsKey(NetworkConf.NETMASK)) {
+                    infoMap.put(NetworkConf.NETMASK, "");
+                }
+                if (!infoMap.containsKey(NetworkConf.GATEWAY)) {
+                    infoMap.put(NetworkConf.GATEWAY, "");
+                }*/
+//                netInfoMap.put(device, infoMap);
+                netInfoList.add(infoMap);
+            }
+            type = 0;
+            result = netInfoList;
+        } catch (Exception e) {
+            type = 2;
+            logger.error(e.toString(), e.getCause());
+        }
+        return  returnJsonStr(type, "获取网卡信息列表", result);
+    }
+
+    /**
+     * 获取网卡信息列表(备用)
+     * @return
+     */
+    @RequestMapping(value = "/get_network_list_bak")
+    public Map<String, Object> getNetworkListBak() {
         int type = 1;
         Object result = "";
         try {
@@ -57,19 +104,53 @@ public class NetworkController {
             result = netInfoList;
         } catch (Exception e) {
             type = 2;
-            logger.error(e.toString());
-            e.printStackTrace();
+            logger.error(e.toString(), e.getCause());
         }
         return returnJsonStr(type, "获取网卡信息列表", result);
     }
 
     /**
-     * 获取单个网卡信息
-     * @param device
+     * 获取单网卡信息详情
+     * @param device 网卡名称
      * @return
      */
-    @RequestMapping(value = "/get_network_info")
+    @RequestMapping(value = "get_network_info")
     public Map<String, Object> getNetworkInfo(String device) {
+        int type = 1;
+        Object result = "";
+        try {
+            String filePath = NetworkConf.path + File.separator + NetworkConf.fileNameHeader + device;
+            Map<String, Object> infoMap = ShellUtil.readFile(filePath, NetworkConf.DEVICE,
+                    NetworkConf.IPADDR, NetworkConf.NETMASK, NetworkConf.GATEWAY);
+            //补全缺省字段
+            /*if (!infoMap.containsKey(NetworkConf.DEVICE)) {
+                infoMap.put(NetworkConf.DEVICE, device);
+            }
+            if (!infoMap.containsKey(NetworkConf.IPADDR)) {
+                infoMap.put(NetworkConf.IPADDR, "");
+            }
+            if (!infoMap.containsKey(NetworkConf.NETMASK)) {
+                infoMap.put(NetworkConf.NETMASK, "");
+            }
+            if (!infoMap.containsKey(NetworkConf.GATEWAY)) {
+                infoMap.put(NetworkConf.GATEWAY, "");
+            }*/
+            type = 0;
+            result = infoMap;
+        } catch (Exception e) {
+            type = 2;
+            logger.error(e.toString(), e.getCause());
+        }
+        return  returnJsonStr(type, "获取网卡详细信息", result);
+    }
+
+    /**
+     * 获取单个网卡信息(备用)
+     * @param device 网卡名称
+     * @return
+     */
+    @RequestMapping(value = "/get_network_info_bak")
+    public Map<String, Object> getNetworkInfoBak(String device) {
         int type = 1;
         Object result = "";
         try {
@@ -92,8 +173,7 @@ public class NetworkController {
             result = contentMap;
         } catch (Exception e) {
             type = 2;
-            logger.error(e.toString());
-            e.printStackTrace();
+            logger.error(e.toString(), e.getCause());
         }
         return returnJsonStr(type, "获取网卡详细信息", result);
     }
@@ -104,7 +184,7 @@ public class NetworkController {
      * @return
      */
     @RequestMapping(value = "/save_network")
-    public Map<String, Object> saveNetwork(Network network) {
+    public Map<String, Object> saveNetwork(@Validated @RequestBody Network network) {
         int type = 1;
         Object result = "";
         try {
@@ -168,8 +248,7 @@ public class NetworkController {
             }
         } catch (Exception e) {
             type = 2;
-            logger.error(e.toString());
-            e.printStackTrace();
+            logger.error(e.toString(), e.getCause());
         }
         return returnJsonStr(type, "保存网络设置", result);
     }
@@ -184,7 +263,16 @@ public class NetworkController {
         Object result = "";
         try {
             List<Map<String, Object>> typeList = new ArrayList<>();
-            File folder = new File(NetworkConf.path);
+            List<String> list_file = ShellUtil.fileList(NetworkConf.path, NetworkConf.fileNameHeader, "lo|bak");
+            for (String fileName : list_file) {
+                Map<String, Object> cell = new HashMap<>();
+                String device = fileName.replace(NetworkConf.fileNameHeader, "");
+                cell.put("key", device);
+                cell.put("value", device);
+                typeList.add(cell);
+            }
+
+            /*File folder = new File(NetworkConf.path);
             List<File> list_file = FileUtil.getFileListByName(folder.getPath(), NetworkConf.fileNameHeader, "-lo", 0);
             for (File file : list_file) {
                 Map<String, Object> cell = new HashMap<>();
@@ -193,13 +281,12 @@ public class NetworkController {
                 cell.put("key", fileName);
                 cell.put("value", fileName);
                 typeList.add(cell);
-            }
+            }*/
             type = 0;
             result = typeList;
         } catch (Exception e) {
             type = 2;
-            logger.error(e.toString());
-            e.printStackTrace();
+            logger.error(e.toString(), e.getCause());
         }
         return returnJsonStr(type, "获取网卡类型列表", result);
     }
@@ -208,8 +295,8 @@ public class NetworkController {
      * 获取路由配置
      * @return
      */
-    @RequestMapping(value = "get_route_info")
-    public Map<String, Object> getRouteInfo(@RequestParam(required = false) String device) {
+    @RequestMapping(value = "get_route_list")
+    public Map<String, Object> getRouteList(@RequestParam(required = false) String device) {
         int type = 1;
         Object result = "";
         try {
@@ -218,20 +305,22 @@ public class NetworkController {
             String routeListStr = ShellUtil.getRoute(device);
             String[] arr_route = routeListStr.split("\r\n");
             for (String route : arr_route) {
-                String[] arr_column = route.split("\\s+");
-                Network network = new Network();
-                network.setIp(arr_column[0]);
-                network.setGateway(arr_column[1]);
-                network.setNetmask(arr_column[2]);
-                network.setName(arr_column[6]);
-                resList.add(network);
+                route = "dsfadsf";
+                if (!route.contains(ROUTEHEADERFILTER1) && !route.contains(ROUTEHEADERFILTER2)) {
+                    String[] arr_column = route.split("\\s+");
+                    Network network = new Network();
+                    network.setIp(arr_column[0]);
+                    network.setGateway(arr_column[1]);
+                    network.setNetmask(arr_column[2]);
+                    network.setName(arr_column[10]);
+                    resList.add(network);
+                }
             }
             type = 0;
             result = resList;
         } catch (Exception e) {
             type = 2;
-            logger.error(e.toString());
-            e.printStackTrace();
+            logger.error(e.toString(), e.getCause());
         }
         return returnJsonStr(type, "获取路由配置", result);
     }
@@ -250,8 +339,7 @@ public class NetworkController {
             type = 0;
         } catch (Exception e) {
             type = 2;
-            logger.error(e.toString());
-            e.printStackTrace();
+            logger.error(e.toString(), e.getCause());
         }
         return returnJsonStr(type, "保存路由配置", result);
     }

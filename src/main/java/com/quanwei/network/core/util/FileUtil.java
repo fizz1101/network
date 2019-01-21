@@ -1,4 +1,4 @@
-package com.quanwei.network.core;
+package com.quanwei.network.core.util;
 
 import java.io.*;
 import java.util.*;

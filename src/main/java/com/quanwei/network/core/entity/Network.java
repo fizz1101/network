@@ -1,4 +1,8 @@
-package com.quanwei.network.core;
+package com.quanwei.network.core.entity;
+
+import com.quanwei.network.core.util.RegexUtil;
+
+import javax.validation.constraints.Pattern;
 
 /**
  * 网络配置类
@@ -13,16 +17,19 @@ public class Network {
     /**
      * 网络ip地址
      */
+    @Pattern(regexp = RegexUtil.REGEX_IP, message = "ip地址格式错误")
     private String ip;
 
     /**
-     * 掩码
+     * 子网掩码
      */
+    @Pattern(regexp = RegexUtil.REGEX_IP, message = "子网掩码格式错误")
     private String netmask;
 
     /**
      * 网关
      */
+    @Pattern(regexp = RegexUtil.REGEX_IP, message = "网关格式错误")
     private String gateway;
 
     public String getName() {
