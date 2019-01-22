@@ -37,7 +37,7 @@ public class NetworkController {
         int type = 1;
         Object result = "";
         try {
-            List<Map<String, Object>> netInfoList = new ArrayList<>();
+//            List<Map<String, Object>> netInfoList = new ArrayList<>();
             Map<String, Object> netInfoMap = new HashMap<>();
             List<String> list_file = ShellUtil.fileList(NetworkConf.path, NetworkConf.fileNameHeader, "lo|bak");
             for (String fileName : list_file) {
@@ -58,11 +58,11 @@ public class NetworkController {
                 if (!infoMap.containsKey(NetworkConf.GATEWAY)) {
                     infoMap.put(NetworkConf.GATEWAY, "");
                 }*/
-//                netInfoMap.put(device, infoMap);
-                netInfoList.add(infoMap);
+                netInfoMap.put(device, infoMap);
+//                netInfoList.add(infoMap);
             }
             type = 0;
-            result = netInfoList;
+            result = netInfoMap;
         } catch (Exception e) {
             type = 2;
             logger.error(e.toString(), e.getCause());
