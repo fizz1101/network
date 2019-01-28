@@ -1,7 +1,7 @@
 package com.quanwei.network.core.handler;
 
 import com.quanwei.network.core.Enum.ErrorCodeEnum;
-import com.quanwei.network.core.common.entity.ResponseEntity;
+import com.quanwei.network.core.entity.ResponseEntity;
 import com.quanwei.network.core.exception.ParamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

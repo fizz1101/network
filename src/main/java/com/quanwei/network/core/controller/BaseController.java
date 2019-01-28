@@ -1,10 +1,9 @@
-package com.quanwei.network.core.common.controller;
+package com.quanwei.network.core.controller;
 
 import com.quanwei.network.core.Enum.ContentTypeEnum;
 import com.quanwei.network.core.util.JacksonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -12,10 +11,9 @@ import java.io.IOException;
 /**
  * 控制器基类
  */
-@RequestMapping(value = "/api")
 public abstract class BaseController {
 
-    private static Logger logger = LoggerFactory.getLogger("operation");
+//    private static Logger logger = LoggerFactory.getLogger("operation");
 
     /**
      * 返回json数据
@@ -47,9 +45,9 @@ public abstract class BaseController {
      */
     protected void renderContent(HttpServletResponse response, Object content, String contentType, String charset) {
         try {
-            if (logger.isDebugEnabled()) {
+            /*if (logger.isDebugEnabled()) {
                 logger.debug(content.toString());
-            }
+            }*/
             response.reset();
             response.setHeader("Access-Control-Allow-Origin", "*");
             response.setContentType(contentType);

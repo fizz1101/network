@@ -1,5 +1,8 @@
 package com.quanwei.network.core.controller;
 
+import com.quanwei.network.core.Enum.ErrorCodeEnum;
+import com.quanwei.network.core.entity.ResponseEntity;
+import com.quanwei.network.core.util.ParamUtil;
 import com.quanwei.network.core.util.ShellUtil;
 import com.quanwei.network.core.entity.Network;
 import com.quanwei.network.core.entity.NetworkConf;
@@ -8,12 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -21,7 +24,7 @@ import java.util.*;
  */
 @RestController
 @RequestMapping(value = "/network")
-public class NetworkController {
+public class NetworkController extends BaseController {
 
     private Logger logger = LoggerFactory.getLogger(NetworkController.class);
 
@@ -33,41 +36,44 @@ public class NetworkController {
      * @return
      */
     @RequestMapping(value = "get_network_list")
-    public Map<String, Object> getNetworkList() {
-        int type = 1;
-        Object result = "";
-        try {
-//            List<Map<String, Object>> netInfoList = new ArrayList<>();
-            Map<String, Object> netInfoMap = new HashMap<>();
-            List<String> list_file = ShellUtil.fileList(NetworkConf.path, NetworkConf.fileNameHeader, "lo|bak");
-            for (String fileName : list_file) {
-                String filePath = NetworkConf.path + File.separator + fileName;
-                String device = fileName.replace(NetworkConf.fileNameHeader, "");
-                Map<String, Object> infoMap = ShellUtil.readFile(filePath, NetworkConf.DEVICE,
-                        NetworkConf.IPADDR, NetworkConf.NETMASK, NetworkConf.GATEWAY);
-                //补全缺省字段
-                /*if (!infoMap.containsKey(NetworkConf.DEVICE)) {
-                    infoMap.put(NetworkConf.DEVICE, device);
-                }
-                if (!infoMap.containsKey(NetworkConf.IPADDR)) {
-                    infoMap.put(NetworkConf.IPADDR, "");
-                }
-                if (!infoMap.containsKey(NetworkConf.NETMASK)) {
-                    infoMap.put(NetworkConf.NETMASK, "");
-                }
-                if (!infoMap.containsKey(NetworkConf.GATEWAY)) {
-                    infoMap.put(NetworkConf.GATEWAY, "");
-                }*/
-                netInfoMap.put(device, infoMap);
-//                netInfoList.add(infoMap);
+    public void getNetworkList(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Map<String, Object> netInfoMap = new HashMap<>();
+        List<String> list_file = ShellUtil.fileList(NetworkConf.path, NetworkConf.fileNameHeader, "lo|bak");
+        for (String fileName : list_file) {
+            String filePath = NetworkConf.path + File.separator + fileName;
+            String device = fileName.replace(NetworkConf.fileNameHeader, "");
+            Map<String, Object> infoMap = ShellUtil.readFile(filePath, NetworkConf.DEVICE, NetworkConf.ONBOOT,
+                    NetworkConf.IPADDR, NetworkConf.NETMASK, NetworkConf.GATEWAY);
+            //补全缺省字段
+            /*if (!infoMap.containsKey(NetworkConf.DEVICE)) {
+                infoMap.put(NetworkConf.DEVICE, device);
             }
-            type = 0;
-            result = netInfoMap;
-        } catch (Exception e) {
-            type = 2;
-            logger.error(e.toString(), e.getCause());
+            if (!infoMap.containsKey(NetworkConf.IPADDR)) {
+                infoMap.put(NetworkConf.IPADDR, "");
+            }
+            if (!infoMap.containsKey(NetworkConf.NETMASK)) {
+                infoMap.put(NetworkConf.NETMASK, "");
+            }
+            if (!infoMap.containsKey(NetworkConf.GATEWAY)) {
+                infoMap.put(NetworkConf.GATEWAY, "");
+            }*/
+            //获取网卡速率与工作模式
+            Map<String, Object> swMap = new HashMap<>();
+            List<Map<String, Object>> swList = ShellUtil.getSpeedAndWork(device);
+            if (swList.size() == 1) {
+                swMap = swList.get(0);
+            } else {
+                swMap.put(NetworkConf.SPEED, "auto");
+                swMap.put(NetworkConf.DUPLEX, "auto");
+            }
+            infoMap.putAll(swMap);
+            //获取网口接收包
+            Map<String, Object> packetMap = ShellUtil.getNetworkPacket(device);
+            infoMap.putAll(packetMap);
+            netInfoMap.put(device, infoMap);
         }
-        return  returnJsonStr(type, "获取网卡信息列表", result);
+        ResponseEntity entity = new ResponseEntity(ErrorCodeEnum.SUCCESS, netInfoMap);
+        renderJson(response, entity);
     }
 
     /**
@@ -135,6 +141,19 @@ public class NetworkController {
             if (!infoMap.containsKey(NetworkConf.GATEWAY)) {
                 infoMap.put(NetworkConf.GATEWAY, "");
             }*/
+            //获取网口速率与工作模式
+            Map<String, Object> swMap = new HashMap<>();
+            List<Map<String, Object>> swList = ShellUtil.getSpeedAndWork(device);
+            if (swList.size() == 1) {
+                swMap = swList.get(0);
+            } else {
+                swMap.put(NetworkConf.SPEED, "auto");
+                swMap.put(NetworkConf.DUPLEX, "auto");
+            }
+            infoMap.putAll(swMap);
+            //获取网口接收包
+            Map<String, Object> packetMap = ShellUtil.getNetworkPacket(device);
+            infoMap.putAll(packetMap);
             type = 0;
             result = infoMap;
         } catch (Exception e) {
@@ -183,8 +202,30 @@ public class NetworkController {
      * @param network
      * @return
      */
-    @RequestMapping(value = "/save_network")
-    public Map<String, Object> saveNetwork(@Validated @RequestBody Network network) {
+    @RequestMapping(value = "save_network")
+    public Map<String, Object> saveNetwork(Network network) {
+        int type = 1;
+        Object result = "";
+        try {
+            String device = network.getName();
+            if (!StringUtils.isEmpty(device)) {
+
+            }
+        } catch ( Exception e) {
+            type = 2;
+            e.printStackTrace();
+            logger.error(e.toString(), e.getCause());
+        }
+        return returnJsonStr(type, "保存网络设置", result);
+    }
+
+    /**
+     * 保存网络设置(备用)
+     * @param network
+     * @return
+     */
+    @RequestMapping(value = "/save_network_bak")
+    public Map<String, Object> saveNetworkBak(@Validated @RequestBody Network network) {
         int type = 1;
         Object result = "";
         try {
@@ -360,16 +401,23 @@ public class NetworkController {
      * 测试
      */
     @RequestMapping(value = "test")
-    public void test() {
-        try {
-            /*String filePath = NetworkConf.path + File.separator + NetworkConf.fileNameHeader + "ens32";
-            ShellUtil.addToFile(filePath, "AAA=aaa", true);
-            ShellUtil.addToFile(filePath, "BBB=bbb", true);*/
-            String list_route = ShellUtil.getRoute("ens32");
-            System.out.println("路由列表：" + list_route);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void test(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Map<String, Object> paramMap = ParamUtil.getMapData(request);
+        String device = ParamUtil.getRequiredString(paramMap, "device");
+        //添加内容测试
+        /*String filePath = NetworkConf.path + File.separator + NetworkConf.fileNameHeader + "ens32";
+        ShellUtil.addToFile(filePath, "AAA=aaa", true);
+        ShellUtil.addToFile(filePath, "BBB=bbb", true);*/
+        //获取路由列表测试
+        /*String list_route = ShellUtil.getRoute("ens32");
+        System.out.println("路由列表：" + list_route);*/
+        //修改网络配置
+        /*ShellUtil.updateNetwork(device, NetworkConf.NETMASK, "0.0.0.0");*/
+        //获取网口接收包
+//        Map<String, Object> packetMap = ShellUtil.getNetworkPacket(device);
+        List<Map<String, Object>> modeList = ShellUtil.getSpeedAndWork(device);
+        ResponseEntity responseEntity = new ResponseEntity(ErrorCodeEnum.SUCCESS, modeList);
+        renderJson(response, responseEntity);
     }
 
     /**

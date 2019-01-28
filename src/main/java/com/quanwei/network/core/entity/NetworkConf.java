@@ -11,9 +11,12 @@ import org.springframework.stereotype.Component;
 public class NetworkConf {
 
     public static final String DEVICE = "DEVICE";
+    public static final String ONBOOT = "ONBOOT";
     public static final String IPADDR = "IPADDR";
     public static final String NETMASK = "NETMASK";
     public static final String GATEWAY = "GATEWAY";
+    public static final String SPEED = "SPEED";
+    public static final String DUPLEX = "DUPLEX";
 
     public static String path;
 

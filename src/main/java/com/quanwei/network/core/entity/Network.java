@@ -15,6 +15,11 @@ public class Network {
     private String name;
 
     /**
+     * 网口启用开关("YES":开;"NO":关)
+     */
+    private String boot;
+
+    /**
      * 网络ip地址
      */
     @Pattern(regexp = RegexUtil.REGEX_IP, message = "ip地址格式错误")
@@ -38,6 +43,14 @@ public class Network {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getBoot() {
+        return boot;
+    }
+
+    public void setBoot(String boot) {
+        this.boot = boot;
     }
 
     public String getIp() {

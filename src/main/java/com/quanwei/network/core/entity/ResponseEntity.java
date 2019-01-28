@@ -1,4 +1,4 @@
-package com.quanwei.network.core.common.entity;
+package com.quanwei.network.core.entity;
 
 
 import com.quanwei.network.core.Enum.ErrorCodeEnum;

@@ -7,6 +7,7 @@ public enum ShellCodeEnum {
 
     SUCCESS(0, "success"),
     PERMIT(1, "Operation not permitted"),
+    NOFILE(2, "No such file or directory"),
     PROCESS(3, "No such process"),
     FILELARGE(27, "File too large");
 

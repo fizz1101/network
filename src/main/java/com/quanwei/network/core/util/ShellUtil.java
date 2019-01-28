@@ -63,7 +63,6 @@ public class ShellUtil {
             content = exec(cmd);
         }
         String[] arr_conline = content.replace("\"", "").split("\r\n");
-
         for (String line : arr_conline) {
             String[] arr_column = line.split("=");
             resMap.put(arr_column[0], arr_column[1]);
@@ -120,8 +119,79 @@ public class ShellUtil {
     }
 
     /**
+     * 启用/禁用网口(临时)
+     * @param device 网卡名称
+     * @param opt 操作类型(up:启用;down:禁用)
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public static void networkUpOrDown(String device, String opt) throws IOException, InterruptedException {
+        String cmd = "ifconfig " + device + " " + opt;
+        exec(cmd);
+    }
+
+    /**
+     * 设置网口速率与工作模式
+     * @param device 网卡名称
+     * @param speed 速率
+     * @param work 工作模式(Full:全双工;Half:半双工)
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public static void setSpeedAndWork(String device, int speed, int work) throws IOException, InterruptedException {
+        String cmd = "ethtool -s " + device + " speed " + speed + " work " + work;
+        exec(cmd);
+    }
+
+    /**
+     * 获取网卡速率与工作模式
+     * @param device 网卡名称
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public static List<Map<String, Object>> getSpeedAndWork(String device) throws IOException, InterruptedException {
+        List<Map<String, Object>> modeList = new ArrayList<>();
+        String mode = "Advertised link modes:";
+        String cmd = "ethtool " + device + " | grep '" + mode + "'";
+        String content = exec(cmd);
+        content = content.replace(mode, "");
+        String[] arr_cell = content.split("\\s+");
+        for (String cell : arr_cell) {
+            if (!StringUtils.isEmpty(cell)) {
+                Map<String, Object> modeMap = new HashMap<>();
+                String[] arr_column = cell.split(File.separator);
+                modeMap.put(NetworkConf.SPEED, arr_column[0].replace("baseT", ""));
+                modeMap.put(NetworkConf.DUPLEX, arr_column[1]);
+                modeList.add(modeMap);
+            }
+        }
+        return modeList;
+    }
+
+    /**
+     * 获取网口收发包情况
+     * @param device 网卡名称
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public static Map<String, Object> getNetworkPacket(String device) throws IOException, InterruptedException {
+        Map<String, Object> resMap = new HashMap<>();
+        String packet = "rx_packets|tx_packets";
+        String cmd = "ethtool -S " + device + " | grep -E '" + packet + "'";
+        String content = exec(cmd);
+        String[] arr_conline = content.split("\r\n");
+        for (String line : arr_conline) {
+            String[] arr_column = line.replace("\\s+", "").split(":");
+            resMap.put(arr_column[0], arr_column[1]);
+        }
+        return resMap;
+    }
+
+    /**
      * 获取网卡路由列表
-     * @param device
+     * @param device 网卡名称
      * @return
      * @throws IOException
      * @throws InterruptedException
@@ -129,15 +199,15 @@ public class ShellUtil {
     public static String getRoute(String device) throws IOException, InterruptedException {
         String cmd = "route";
         if (!StringUtils.isEmpty(device)) {
-            cmd += " | grep " + device;
+            cmd += " | grep '" + device + "'";
         }
         return exec(cmd);
     }
 
     /**
      * 设置路由
-     * @param network
-     * @param opt
+     * @param network 网卡信息实体类
+     * @param opt 操作类型(add:添加;del:删除)
      * @throws IOException
      * @throws InterruptedException
      */
