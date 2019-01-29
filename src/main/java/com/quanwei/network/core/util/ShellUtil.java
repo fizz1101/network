@@ -59,8 +59,7 @@ public class ShellUtil {
             }
             columnStr = columnStr.substring(0, columnStr.length()-1);
             logger.info("获取字段：" + columnStr);
-            String cmd = "grep -E '" + columnStr + "' " + filePath;
-            content = exec(cmd);
+            content = readContent(filePath, columnStr);
         }
         String[] arr_conline = content.replace("\"", "").split("\r\n");
         for (String line : arr_conline) {
@@ -68,6 +67,19 @@ public class ShellUtil {
             resMap.put(arr_column[0], arr_column[1]);
         }
         return resMap;
+    }
+
+    /**
+     * 读取所需内容
+     * @param filePath 文件路径
+     * @param grep 过滤内容
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public static String readContent(String filePath, String grep) throws IOException, InterruptedException {
+        String cmd = "grep -E '" + grep + "' " + filePath;
+        return exec(cmd);
     }
 
     /**
@@ -94,15 +106,11 @@ public class ShellUtil {
      * @param column 字段
      * @param value 值
      */
-    public static void updateNetwork(String fileName, String column, String value) {
-        try {
-            String filePath = NetworkConf.path + File.separator + NetworkConf.fileNameHeader + fileName;
-            String oldStr = "^" + column + "=(.+)$";
-            String newStr = column + "=" + value;
-            replace(filePath, oldStr, newStr);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void updateNetwork(String fileName, String column, String value) throws IOException, InterruptedException {
+        String filePath = NetworkConf.path + File.separator + NetworkConf.fileNameHeader + fileName;
+        String oldStr = "^" + column + "=(.+)$";
+        String newStr = column + "=" + value;
+        replace(filePath, oldStr, newStr);
     }
 
     /**
@@ -183,8 +191,8 @@ public class ShellUtil {
         String content = exec(cmd);
         String[] arr_conline = content.split("\r\n");
         for (String line : arr_conline) {
-            String[] arr_column = line.replace("\\s+", "").split(":");
-            resMap.put(arr_column[0], arr_column[1]);
+            String[] arr_column = line.replaceAll("\\s+", "").split(":");
+            resMap.put(arr_column[0].replace("_", "").toUpperCase(), arr_column[1]);
         }
         return resMap;
     }

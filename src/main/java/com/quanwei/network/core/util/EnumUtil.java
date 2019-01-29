@@ -1,4 +1,4 @@
-package com.quanwei.network.core.Enum;
+package com.quanwei.network.core.util;
 
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
