@@ -134,7 +134,10 @@ public class ShellUtil {
      * @throws InterruptedException
      */
     public static void networkUpOrDown(String device, String opt) throws IOException, InterruptedException {
-        String cmd = "ifconfig " + device + " " + opt;
+        //centos7
+        String cmd = "ip -l set " + device + " " + opt;
+        //centos6
+        //cmd = "ifconfig " + device + " " + opt;
         exec(cmd);
     }
 
@@ -146,7 +149,7 @@ public class ShellUtil {
      * @throws IOException
      * @throws InterruptedException
      */
-    public static void setSpeedAndWork(String device, int speed, int work) throws IOException, InterruptedException {
+    public static void setSpeedAndWork(String device, int speed, String work) throws IOException, InterruptedException {
         String cmd = "ethtool -s " + device + " speed " + speed + " work " + work;
         exec(cmd);
     }
@@ -205,7 +208,7 @@ public class ShellUtil {
      * @throws InterruptedException
      */
     public static String getRoute(String device) throws IOException, InterruptedException {
-        String cmd = "route";
+        String cmd = "ip route show";
         if (!StringUtils.isEmpty(device)) {
             cmd += " | grep '" + device + "'";
         }
@@ -220,7 +223,13 @@ public class ShellUtil {
      * @throws InterruptedException
      */
     public static void updateRoute(Network network, String opt) throws IOException, InterruptedException {
-        String cmd = "route " + opt + " -net " + network.getIp() + " netmask " + network.getNetmask() + " " + network.getName();
+        //centos7
+        String cmd = "ip route " + opt + " " + network.getIp() + " dev " + network.getName() + " proto static metric 100";
+        if(!StringUtils.isEmpty(network.getGateway())) {
+            cmd += " via " + network.getGateway();
+        }
+        //centos6
+        //cmd = "route " + opt + " -net " + network.getIp() + " netmask " + network.getNetmask() + " " + network.getName();
         exec(cmd);
     }
 
@@ -231,6 +240,7 @@ public class ShellUtil {
      */
     public static void restartNetwork() throws IOException, InterruptedException {
         String cmd = "/etc/init.d/network restart";
+        //cmd = "systemctl restart network";
         exec(cmd);
     }
 

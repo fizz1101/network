@@ -13,7 +13,7 @@ import java.io.IOException;
  */
 public abstract class BaseController {
 
-//    private static Logger logger = LoggerFactory.getLogger("operation");
+    public static Logger logger = LoggerFactory.getLogger(BaseController.class);
 
     /**
      * 返回json数据

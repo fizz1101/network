@@ -2,17 +2,15 @@ package com.quanwei.network.core.controller;
 
 import com.quanwei.network.core.Enum.ErrorCodeEnum;
 import com.quanwei.network.core.entity.ResponseEntity;
-import com.quanwei.network.core.util.JacksonUtil;
 import com.quanwei.network.core.util.ParamUtil;
 import com.quanwei.network.core.util.ShellUtil;
 import com.quanwei.network.core.entity.Network;
 import com.quanwei.network.core.entity.NetworkConf;
 import com.quanwei.network.core.util.FileUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,18 +33,35 @@ import java.util.*;
 @RequestMapping(value = "/network")
 public class NetworkController extends BaseController {
 
-    private Logger logger = LoggerFactory.getLogger(NetworkController.class);
+//    private Logger logger = LoggerFactory.getLogger(NetworkController.class);
 
     private static final String ROUTEHEADERFILTER1 = "Kernel";
     private static final String ROUTEHEADERFILTER2 = "Destination";
+
+    /**
+     * 网口列表页面
+     * @return
+     */
+    @RequestMapping(value = "/network_list")
+    public ModelAndView networkPage() {
+        return new ModelAndView("network.html");
+    }
+
+    /**
+     * 路由列表页面
+     * @return
+     */
+    public ModelAndView routePage() {
+        return new ModelAndView("route.html");
+    }
 
     /**
      * 获取网卡类型列表
      * @param response
      *    "result": [
      *         {
-     *             "value": "ens32",
-     *             "key": "ens32"
+     *             "key": "ens32",
+     *             "value": "ens32"
      *         }
      *     ]
      * @throws Exception
@@ -97,6 +112,7 @@ public class NetworkController extends BaseController {
      */
     @RequestMapping(value = "get_network_list")
     public void getNetworkList(HttpServletResponse response) throws Exception {
+        Map<String, Object> resMap = new HashMap<>();
         List<Map<String, Object>> netInfoList = new ArrayList<>();
         //获取目录下文件列表
         List<String> list_file = ShellUtil.fileList(NetworkConf.path, NetworkConf.fileNameHeader, "lo|bak");
@@ -120,7 +136,9 @@ public class NetworkController extends BaseController {
             infoMap.putAll(packetMap);
             netInfoList.add(infoMap);
         }
-        ResponseEntity entity = new ResponseEntity(ErrorCodeEnum.SUCCESS, netInfoList);
+        resMap.put("totle", netInfoList.size());
+        resMap.put("row", netInfoList);
+        ResponseEntity entity = new ResponseEntity(ErrorCodeEnum.SUCCESS, resMap);
         renderJson(response, entity);
     }
 
@@ -159,7 +177,7 @@ public class NetworkController extends BaseController {
     /**
      * 获取单网卡信息详情
      * @param request
-     *  device 网口名称
+     *  device 网口名称(必传)
      * @param response
      *    "result": {
      *         "SPEED": "auto", //网口速率("auto"/10/100/1000)
@@ -228,21 +246,63 @@ public class NetworkController extends BaseController {
     /**
      * 保存网络设置
      * @param network 网卡实体类
+     * @param request
+     *  speed: 速率(10/100/1000)
+     *  work: 工作模式(Full/Half)
      * @param response
      */
     @RequestMapping(value = "save_network")
-    public void saveNetwork(Network network, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void saveNetwork(@Validated Network network, HttpServletRequest request, HttpServletResponse response) throws Exception {
         Map<String, Object> paramMap = ParamUtil.getMapData(request);
         String device = ParamUtil.getRequiredString(paramMap, "device");
         String filePath = NetworkConf.path + File.separator + NetworkConf.fileNameHeader + device;
         //更新网络配置
-        String ip = ShellUtil.readContent(filePath, NetworkConf.IPADDR);
-        if (StringUtils.isEmpty(ip)) {
-            ShellUtil.addToFile(filePath, network.getIp(), true);
+        Map<String, Object> oldNetworkMap = ShellUtil.readFile(filePath, NetworkConf.DEVICE, NetworkConf.ONBOOT,
+                NetworkConf.IPADDR, NetworkConf.NETMASK, NetworkConf.GATEWAY);
+        //修改ip
+        if (oldNetworkMap.containsKey(NetworkConf.IPADDR)) {
+            ShellUtil.updateNetwork(filePath, NetworkConf.IPADDR, network.getIp());
         } else {
-            ShellUtil.updateNetwork(filePath, NetworkConf.IPADDR, ip);
+            String content = NetworkConf.IPADDR + "=" + network.getIp();
+            ShellUtil.addToFile(filePath, content, true);
         }
+        //修改掩码
+        if (oldNetworkMap.containsKey(NetworkConf.NETMASK)) {
+            ShellUtil.updateNetwork(filePath, NetworkConf.NETMASK, network.getNetmask());
+        } else {
+            String content = NetworkConf.NETMASK + "=" + network.getNetmask();
+            ShellUtil.addToFile(filePath, content, true);
+        }
+        //修改网关
+        if (oldNetworkMap.containsKey(NetworkConf.GATEWAY)) {
+            ShellUtil.updateNetwork(filePath, NetworkConf.GATEWAY, network.getGateway());
+        } else {
+            String content = NetworkConf.GATEWAY + "=" + network.getGateway();
+            ShellUtil.addToFile(filePath, content, true);
+        }
+        //修改开关
+        if (oldNetworkMap.containsKey(NetworkConf.ONBOOT)) {
+            ShellUtil.updateNetwork(filePath, NetworkConf.ONBOOT, network.getBoot());
+        } else {
+            String content = NetworkConf.ONBOOT + "=" + network.getBoot();
+            ShellUtil.addToFile(filePath, content, true);
+        }
+        //修改速率与工作模式
+        ShellUtil.setSpeedAndWork(device, ParamUtil.getRequiredInteger(paramMap, "speed"), ParamUtil.getRequiredString(paramMap, "work"));
 
+        /*Map<String, Object> oldNetworkMap = ShellUtil.readFile(filePath, NetworkConf.DEVICE, NetworkConf.ONBOOT,
+                NetworkConf.IPADDR, NetworkConf.NETMASK, NetworkConf.GATEWAY);
+        for (String key : oldNetworkMap.keySet()) {
+            ShellUtil.updateNetwork(filePath, key, ParamUtil.getRequiredString(paramMap, key));
+            paramMap.remove(key);
+        }
+        for (String key : paramMap.keySet()) {
+            String content = key + "=" + ParamUtil.getRequiredString(paramMap, key);
+            ShellUtil.addToFile(filePath, content, true);
+        }*/
+
+        //重启网卡
+        ShellUtil.restartNetwork();
         ResponseEntity responseEntity = new ResponseEntity(ErrorCodeEnum.SUCCESS, "");
         renderJson(response, responseEntity);
     }
@@ -325,8 +385,8 @@ public class NetworkController extends BaseController {
     /**
      * 启用/禁用网口
      * @param request
-     *  device：网口名称
-     *  status：操作状态(1:启用;0:禁用)
+     *  device：网口名称(必传)
+     *  status：操作状态(1:启用;0:禁用)(必传)
      * @param response
      *  "result": ""
      * @throws Exception
@@ -356,12 +416,14 @@ public class NetworkController extends BaseController {
      * @param request
      *  device: 网口名称
      * @param response
-     *    "result": [
+     *     "result": [
      *         {
-     *             "name": "ens32", //网口名称
+     *             "dev": "ens32", //网口名称
      *             "ip": "192.168.1.135", //目的地址
-     *             "netmask": "0.0.0.0", //子网掩码
-     *             "gateway": "192.168.1.1" //关联网关
+     *             "via": "192.168.1.1", //关联网关
+     *             "proto": "static", //静态路由
+     *             "scope": link",
+     *             "metric": 100
      *         }
      *     ]
      * @throws Exception
@@ -370,29 +432,37 @@ public class NetworkController extends BaseController {
     public void getRouteList(HttpServletRequest request, HttpServletResponse response) throws Exception {
         Map<String, Object> paramMap = ParamUtil.getMapData(request);
         String device = ParamUtil.getString(paramMap, "device");
-        List<Network> resList = new ArrayList<>();
+        Map<String, Object> resMap = new HashMap<>();
+        List<Object> resList = new ArrayList<>();
         //获取路由信息
         String routeListStr = ShellUtil.getRoute(device);
         String[] arr_route = routeListStr.split("\r\n");
         for (String route : arr_route) {
             if (!route.contains(ROUTEHEADERFILTER1) && !route.contains(ROUTEHEADERFILTER2)) {
                 String[] arr_column = route.split("\\s+");
-                Network network = new Network();
+                Map<String, String> routeInfo = new HashMap<>();
+                routeInfo.put("ip", arr_column[0]);
+                for (int i=1; i<arr_column.length; i++) {
+                    routeInfo.put(arr_column[i], arr_column[++i]);
+                }
+                /*Network network = new Network();
                 network.setIp(arr_column[0]);
                 network.setGateway(arr_column[1]);
                 network.setNetmask(arr_column[2]);
-                network.setName(arr_column[7]);
-                resList.add(network);
+                network.setName(arr_column[7]);*/
+                resList.add(routeInfo);
             }
         }
-        ResponseEntity responseEntity = new ResponseEntity(ErrorCodeEnum.SUCCESS, resList);
+        resMap.put("total", resList.size());
+        resMap.put("row", resList);
+        ResponseEntity responseEntity = new ResponseEntity(ErrorCodeEnum.SUCCESS, resMap);
         renderJson(response, responseEntity);
     }
 
     /**
      * 保存路由配置
      * @param request
-     *  opt: 操作类型("add"/"del")
+     *  opt: 操作类型("add"/"del")(必传)
      * @param response
      * @param network 网卡实体类
      * @throws Exception
@@ -447,9 +517,9 @@ public class NetworkController extends BaseController {
 
     /**
      * 返回结果体
-     * @param type
-     * @param msg
-     * @param result
+     * @param type 结果类型
+     * @param msg 结果说明
+     * @param result 详情
      * @return
      */
     private Map<String, Object> returnJsonStr(int type, String msg, Object result) {

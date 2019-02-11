@@ -21,7 +21,8 @@ public class ParamUtil {
         Map<String, Object> map = (Map<String, Object>) request.getSession().getAttribute("dataMap");
         /*if (map == null || map.isEmpty()) {
             throw new ParamException(ErrorCodeEnum.PARAM_ERROR);
-        }*/
+        }
+        return map;*/
         return map == null ? new HashMap() {} : map;
     }
 

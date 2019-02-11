@@ -1,6 +1,7 @@
 package com.quanwei.network.core.filter;
 
 import com.quanwei.network.core.Enum.ContentTypeEnum;
+import com.quanwei.network.core.entity.constant.ContentTypeConst;
 import com.quanwei.network.core.util.JacksonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +44,7 @@ public class ParamFilter implements Filter {
         String url = httpServletRequest.getRequestURL().toString();
         //请求参数类型
         String contentType = httpServletRequest.getContentType();
-        boolean flag_filter = isFilterUrl(url);
-        if (!flag_filter) {
+        if (!isFilterUrl(url)) {
             /*if (StringUtils.isEmpty(contentType)) {
                 if (logger.isWarnEnabled()) {
                     if (!httpServletRequest.getMethod().equals("HEAD")) {
@@ -57,31 +57,38 @@ public class ParamFilter implements Filter {
                 }
                 //请求内容长度
                 int contentLength = servletRequest.getContentLength();
+                logger.info("请求内容长度：" + contentLength);
                 if (contentType == null || contentLength > 0) {
+                    if (contentType == null) {
+                        contentType = "";
+                    }
                     Map<String, Object> dataMap = new HashMap<>();
                     MyRequestWrapper myRequest = new MyRequestWrapper(httpServletRequest);
-                    if (ContentTypeEnum.JSON.getValue().equalsIgnoreCase(contentType)) {
-                        //解析json格式数据
-                        String reqBody = myRequest.getBody();
-                        dataMap = JacksonUtil.buildNormalBinder().toObject(reqBody, Map.class);
-                    } else if (ContentTypeEnum.URLENCODE.getValue().equalsIgnoreCase(contentType)) {
-                        //解析x-www-form-urlencoded格式数据
-                        Map<String, String[]> requestMap = myRequest.getParameterMap();
-                        for (Map.Entry<String, String[]> entry : requestMap.entrySet()) {
-                            dataMap.put(entry.getKey(), entry.getValue()[0]);
-                        }
-                    } else if (ContentTypeEnum.FORMDATA.getValue().equalsIgnoreCase(contentType)) {
-                        //解析form-data格式数据
-                        Map<String, String[]> requestMap = myRequest.getParameterMap();
-                        for (Map.Entry<String, String[]> entry : requestMap.entrySet()) {
-                            dataMap.put(entry.getKey(), entry.getValue()[0]);
-                        }
-                    } else {
-                        //解析其他格式数据
-                        Map<String, String[]> requestMap = myRequest.getParameterMap();
-                        for (Map.Entry<String, String[]> entry : requestMap.entrySet()) {
-                            dataMap.put(entry.getKey(), entry.getValue()[0]);
-                        }
+                    Map<String, String[]> requestMap = myRequest.getParameterMap();
+                    switch (contentType) {
+                        case ContentTypeConst.JSON:
+                            //解析json格式数据
+                            String reqBody = myRequest.getBody();
+                            dataMap = JacksonUtil.buildNormalBinder().toObject(reqBody, Map.class);
+                            break;
+                        case ContentTypeConst.FORMDATA:
+                            //解析form-data格式数据
+                            for (Map.Entry<String, String[]> entry : requestMap.entrySet()) {
+                                dataMap.put(entry.getKey(), entry.getValue()[0]);
+                            }
+                            break;
+                        case ContentTypeConst.URLENCODE:
+                            //解析x-www-form-urlencoded格式数据
+                            for (Map.Entry<String, String[]> entry : requestMap.entrySet()) {
+                                dataMap.put(entry.getKey(), entry.getValue()[0]);
+                            }
+                            break;
+                        default:
+                            //解析其他格式数据
+                            for (Map.Entry<String, String[]> entry : requestMap.entrySet()) {
+                                dataMap.put(entry.getKey(), entry.getValue()[0]);
+                            }
+                            break;
                     }
                     myRequest.getSession().setAttribute("dataMap", dataMap);
                     filterChain.doFilter(myRequest, servletResponse);
@@ -109,7 +116,7 @@ public class ParamFilter implements Filter {
             throw new NullPointerException("校验请求url为空");
         } else {
             for (String key : exclusionList) {
-                if (url.equalsIgnoreCase(key)) {
+                if (url.contains(key)) {
                     flag = true;
                     break;
                 }

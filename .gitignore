@@ -4,6 +4,8 @@
 mvnw
 mvnw.cmd
 
+src/test
+
 ### STS ###
 .apt_generated
 .classpath

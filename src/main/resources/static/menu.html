@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>jQuery点击展开收缩树形菜单</title>
+    <link rel="stylesheet" href="css/font-awesome/css/font-awesome.min.css" />
+
+    <style type="text/css">
+        *{margin: 0;padding: 0}
+        body{font-size: 12px;font-family: "宋体","微软雅黑";}
+        ul,li{list-style: none;}
+        a:link,a:visited{text-decoration: none;color: #fff;}
+        .sidebar{width: 210px; border-right: 1px solid black; position: absolute; top: 50px; left: 0; bottom: 25px; z-index: 0; background-color: #467ca2}
+        .menu{width: 210px;border-bottom:solid 1px #316a91; float: left; z-index: 1; position: relative;}
+        .menu ul li{background-color:#467ca2; border:solid 1px #316a91; border-bottom:0;}
+        .menu ul li a{padding-left: 10px;color: #fff; font-size:12px; display: block; font-weight:bold; height:36px;line-height: 36px;position: relative;}
+        .menu ul li .direction{position: absolute; right: 10px; line-height: 36px;}
+        /*.menu ul li .inactive{ background:url(images/off.png) no-repeat 184px center;}
+        .menu ul li .inactives{background:url(images/on.png) no-repeat 184px center;}*/
+        .menu ul li ul{display: none;}
+        .menu ul li ul li { border-left:0; border-right:0; background-color:#6196bb; border-color:#467ca2;}
+        .menu ul li ul li ul{display: none;}
+        .menu ul li ul li a{ padding-left:20px;}
+        .menu ul li ul li ul li { background-color:#d6e6f1; border-color:#6196bb; }
+        .last{ background-color:#d6e6f1; border-color:#6196bb; }
+        .menu ul li ul li ul li a{ color:#316a91; padding-left:30px;}
+        .main{width:75%; height:100%; background-color: #D6E6F1; float: left;}
+        .clear{clear: both;}
+        header{width:100%; height: 50px; background-color: white;}
+        footer{width: 100%; height: 25px; background-color: white; text-align: center; line-height: 25px; position: absolute; bottom: 0;}
+    </style>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('.inactive').click(function(){
+                var className=$(this).parents('li').parents().attr('class');
+                if($(this).siblings('ul').css('display')=='none'){
+                    if(className=="first"){
+                        $(this).parents('li').siblings('li').children('ul').parent('li').children('a').removeClass('inactives');
+                        $(this).parents('li').siblings('li').children('ul').slideUp(100);
+                        $(this).parents('li').children('ul').children('li').children('ul').parent('li').children('a').removeClass('inactives');
+                        $(this).parents('li').children('ul').children('li').children('ul').slideUp(100);
+
+                        $(".direction").removeClass('fa-angle-down');
+                        $(this).children('i').last().addClass('fa-angle-down');
+                    }
+                    $(this).addClass('inactives');
+                    $(this).siblings('ul').slideDown(100);
+                }else{
+                    $(this).removeClass('inactives');
+                    $(this).siblings('ul').slideUp(100);
+
+                    $(this).children('i').last().removeClass('fa-angle-down');
+                    $(this).children('i').last().addClass('fa-angle-right');
+                }
+            })
+        });
+    </script>
+</head>
+<body>
+<header>
+
+</header>
+<section>
+    <div class="sidebar"></div>
+    <div class="menu">
+        <ul class="first">
+            <li><a href="index.html"><i class="fa fa-home fa-fw"></i>&nbsp;首页</a></li>
+            <li><a href="#" class="inactive active"><i class="fa fa-cog fa-fw"></i>&nbsp;网络配置<i class="fa fa-angle-right fa-fw direction"></i></a>
+                <ul style="display: none;">
+                    <li><a href="network">接口配置</a></li>
+                    <li><a href="route">路由配置</a></li>
+                </ul>
+            </li>
+
+            <li><a href="#" class="inactive"><i class="fa fa-folder fa-fw"></i>&nbsp;组织机构<i class="fa fa-angle-right fa-fw direction"></i></a>
+                <ul style="display: none">
+                    <li><a href="#" class="inactive active">美协机关</a>
+                        <ul>
+                            <li><a href="#">办公室</a></li>
+                            <li><a href="#">人事处</a></li>
+                            <li><a href="#">组联部</a></li>
+                            <li><a href="#">外联部</a></li>
+                            <li><a href="#">研究部</a></li>
+                            <li><a href="#">维权办</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#" class="inactive active">中国文联美术艺术中心</a>
+                        <ul>
+                            <li><a href="#">综合部</a></li>
+                            <li><a href="#">大型活动部</a></li>
+                            <li><a href="#">展览部</a></li>
+                            <li><a href="#">艺委会工作部</a></li>
+                            <li><a href="#">信息资源部</a></li>
+                            <li><a href="#">双年展办公室</a></li>
+                        </ul>
+                    </li>
+                    <li class="last"><a href="#">《美术》杂志社</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="main">
+        dsafdasf
+    </div>
+    <div class="clear"></div>
+</section>
+<footer>
+    杭州全维科技股份有限公司
+</footer>
+</body>
+</html>
