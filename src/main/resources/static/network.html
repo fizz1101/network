@@ -1,78 +1,352 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="style/index.css">
-    <script type="text/javascript" src="script/jquery-1.10.2.min.js "></script>
-    <script type="text/javascript" src="script/request.js"></script>
-    <script type="text/javascript" src="script/network.js"></script>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<style>
+		*{margin: 0; padding: 0;}
+		body {background-color: rgb(225,233,244);}
+		table{font-size: 18px; text-align: center; width: 95%; max-width: 99%; margin: 10px auto 0; border: 1px solid gainsboro;}
+		table tr{height: 40px; line-height: 40px;}
+		table tr:nth-child(2n+1){background-color: rgb(225,233,250);}
+		table tr:hover{background-color: rgb(225,250,250);}
+		table th{font-size: 20px; color: white; background-color: #6196BB;}
+		table input[type='checkbox']{margin-left: 5px;}
+		#title{height: 36px; line-height: 36px; padding-left: 20px; font-size: 20px; font-weight: bold; color: white; background-color: #467ca2;}
+		#opt{float: right; margin-top: 10px; margin-right: 5%;}
+		#opt input[type='button']{cursor: pointer; background-color: #00C4B2; color: white; padding: 4px 10px; border-radius: 6px; border: 1px solid #cccccc; font-size: 12px;}
+	
+		form{width: 300px; margin: 15px 10px 0;}
+		form div{margin-bottom: 5px;}
+		form span{width: 30%; display: inline-block; text-align: right;}
+		form input[type="text"]{width: 65%; text-align: left;}
+		form select{width: 65%; text-align: left;}
+		
+	</style>
 </head>
 <body>
-<div class="close" id="close"></div>
-<div class="new">
-    <form id="new-form" >
-        <span>目的地址：</span><input type="text" style="width: 66%" />
-        <span>子网掩码：</span><input type="text" style="width: 66%"/>
-        <span>网关：</span><input type="text"  style="width: 220px;"/>
-        <input type="button" value="提交" id="btn_route_save"/>
-    </form>
-</div>
-<div id="header">
-    <img src="images/header.png " alt="">
-</div>
-<div class="all">
-    <ul>
-       <li class="title">网络配置</li>
-    </ul>
-    <form id="networkForm" action="" style=" height:200px;margin-left: 100px;">
-        <ul>
-            <li> <span>网卡：</span>
-                <select id="networkType" name="name" style="width: 350px;height:30px;">
-                    <option value="">请选择</option>
-                </select>
-            </li>
-            <li>
-                <span>Ipv4地址：</span>
-                <input type="text" id="ip" name="ip" style="width: 325px;height:25px;" disabled="true" class="change">
-            </li>
-            <li>
-                <span>子网掩码：</span>
-                <input type="text" id="netmask" name="netmask" style="width: 325px;height:25px" disabled="true" class="change">
-            </li>
-            <li>
-                <span>网关：</span>
-                <input type="text" id="gateway" name="gateway" style="width: 350px;height:25px" disabled="true" class="change">
-            </li>
-        </ul>
-    </form>
-    <input type="button" value="编辑" id="revise" class="button">
-    <input type="button" value="保存" id="btn_network_save" class="button">
-    <ul>
-        <li class="title" style="margin-top: 20px;">路由列表</li>
-    </ul>
-    <table id="route_table">
-        <tr>
-            <th></th>
-            <th>目的地址</th>
-            <th>子网掩码</th>
-            <th>网关</th>
-        </tr>
-        <tr class="row">
-            <td><input type="checkbox" name="test" style="margin-left: 80px;"></td>
-            <td >default</td>
-            <td >0.0.0.0</td>
-            <td >192.168.1.1</td>
-        </tr>
-        <tr class="row">
-           <td><input type="checkbox" name="test" style="margin-left: 80px;"></td>
-            <td >192.168.1.0</td>
-            <td >255.255.255.0</td>
-            <td>0.0.0.0</td>
-        </tr>
-    </table>
-    <input type="button" id="new-built" class="button" value="新增">
-    <input type="button" id="amputate" class="button" value="删除">
-</div>
+	<div id="title">网口列表</div>
+	<table id="networkTable" cellpadding="0" cellspacing="0">
+		<thead>
+			<tr>
+				<th></th>
+				<th>网口名称</th>
+				<th>接口开关</th>
+				<th>ip地址</th>
+				<th>子网掩码</th>
+				<th>网关</th>
+				<th>速率</th>
+				<th>双工</th>
+				<th>收报文数</th>
+				<th>发报文数</th>
+			</tr>
+		</thead>
+		<tbody id="cell">
+			<tr>
+				<td><input type="checkbox" /></td>
+				<td>row 1 col 1</td>
+				<td>row 1 col 2</td>
+				<td>row 1 col 3</td>
+				<td>row 1 col 4</td>
+				<td>row 1 col 5</td>
+				<td>row 1 col 6</td>
+				<td>row 1 col 7</td>
+				<td>row 1 col 8</td>
+				<td>row 1 col 9</td>
+			</tr>
+			<tr>
+				<td><input type="checkbox" /></td>
+				<td>row 2 col 1</td>
+				<td>row 2 col 2</td>
+				<td>row 2 col 3</td>
+				<td>row 2 col 4</td>
+				<td>row 2 col 5</td>
+				<td>row 2 col 6</td>
+				<td>row 2 col 7</td>
+				<td>row 2 col 8</td>
+				<td>row 2 col 9</td>
+			</tr>
+			<tr>
+				<td><input type="checkbox" /></td>
+				<td>row 3 col 1</td>
+				<td>row 3 col 2</td>
+				<td>row 3 col 3</td>
+				<td>row 3 col 4</td>
+				<td>row 3 col 5</td>
+				<td>row 3 col 6</td>
+				<td>row 3 col 7</td>
+				<td>row 3 col 8</td>
+				<td>row 3 col 9</td>
+			</tr>
+			<tr>
+				<td><input type="checkbox" /></td>
+				<td>row 4 col 1</td>
+				<td>row 4 col 2</td>
+				<td>row 4 col 3</td>
+				<td>row 4 col 4</td>
+				<td>row 4 col 5</td>
+				<td>row 4 col 6</td>
+				<td>row 4 col 7</td>
+				<td>row 4 col 8</td>
+				<td>row 4 col 9</td>
+			</tr>
+		</tbody>
+	</table>
+	<div id="opt">
+		<input type="button" value="查看" id="show" />
+		<input type="button" value="编辑" id="edit" />
+	</div>
 </body>
+<div id="div_edit" style="display: none;">
+	<form id="networkForm" onsubmit="check(this)">
+        <div>
+            <span>网卡：</span>
+            <select id="networkType" name="name">
+                <option value="">请选择</option>
+            </select>
+        </div>
+        <div>
+            <span>Ipv4 地址：</span>
+            <input type="text" id="ip" name="ip" />
+        </div>
+        <div>
+            <span>子网掩码：</span>
+            <input type="text" id="netmask" name="netmask" />
+        </div>
+        <div>
+            <span>网关：</span>
+            <input type="text" id="gateway" name="gateway" />
+        </div>
+    </form>
+</div>
+<script src="script/jquery.min.js"></script>
+<script src="script/layer/layer.js"></script>
+<script>
+	var networkCache = {};
+
+	$(function() {
+		//初始化加载数据
+		initData();
+
+		//选行记录
+		$("#cell tr").click(function() {
+			$("input[type='checkbox']", this).click();
+			/*var child_target = $(this).children()[0].nodeName;
+			if (child_target != "TH") {
+				$("input[type='checkbox']", this).click();
+			}*/
+		})
+		//查看按钮点击
+		$("#show").click(function() {
+			var select = $("#cell input:checked").size();
+			if (select < 1) {
+				layer.msg("请选择数据行");
+			} else if (select > 1) {
+				layer.msg("只能选择一行数据");
+			} else {
+				var target = $("#cell input:checked").attr("data-device");
+				layer.open({
+					type: 1,
+					title: "编辑接口信息",
+					content: $("#div_edit"),
+					shadeClose: true,
+					success: function(index, layerno) {
+						//显示接口详细信息
+						setNetworkInfo(target);
+					},
+					btn: ['保存'],
+					yes: function(index, layerno) {
+						//保存接口配置
+						save_network();
+					},
+					cancel: function() {
+						//layer.msg("关闭弹窗");
+					}
+				});
+			}
+		})
+	})
+	
+	//初始化加载数据
+	function initData() {
+		networkType();
+		networkList();
+	}
+	
+	/**
+     * 校验内容
+     */
+    function check(obj) {
+		return true;
+    }
+
+    /**
+     * 获取网卡类型
+     */
+    function networkType() {
+        $.ajax({
+            url: "/network/get_network_type",
+            type: "post",
+            dataType: "json",
+            success: function(data) {
+                if (data!=null && data.code=="0") {
+                    //setNetworkType(data.result);
+                } else {
+                    layer.msg(data.msg);
+                }
+            },
+            error: function(data) {
+                layer.msg("获取网卡类型，服务器交互异常");
+            }
+        })
+    }
+
+    /**
+     * 设置网卡类型
+     */
+    function setNetworkType(data) {
+        var option = "";
+        for (var key in data) {
+            option += "<option value='"+data[key].key+"'>"+data[key].value+"</option>";
+        }
+        $("#networkType").html(option);
+    }
+
+    /**
+     * 获取网卡信息列表
+     */
+    function networkList() {
+        $.ajax({
+            url: "/network/get_network_list",
+            type: "post",
+            dataType: "json",
+            success: function(data) {
+                if (data!=null && data.code=="0") {
+                	setNetworkList(data.result.row);
+                    cacheNetworkList(data.result.row);
+                    //setNetworkInfo("ens32");
+                } else {
+                    layer.msg(data.msg);
+                }
+            },
+            error: function(data) {
+                layer.msg("获取网络配置列表，服务器交互异常");
+            }
+        })
+    }
+
+    /**
+     * 获取网卡信息列表(备用)
+     */
+    function networkListBak() {
+        $.ajax({
+            url: "/network/get_network_list_bak",
+            type: "post",
+            dataType: "json",
+            success: function(data) {
+            	if (data!=null && data.code=="0") {
+                    cacheNetworkListBak(data.result);
+                    setNetworkInfo("ens32");
+            	} else {
+                    layer.msg(data.msg);
+            	}
+            },
+            error: function(data) {
+                layer.msg("获取网络配置列表，服务器交互异常");
+            }
+        })
+    }
+    
+    /**
+     * 显示接口列表
+     */
+    function setNetworkList(data) {
+    	var tableCell;
+    	for (var key in data) {
+    		//生成每行的数据展示
+    		tableCell += "<tr>";
+    		tableCell += "<td><input type='checkbox' data-device='"+data[key].DEVICE+"' /></td>";
+    		tableCell += "<td>"+data[key].DEVICE+"</td>";
+    		tableCell += "<td>"+data[key].ONBOOT+"</td>";
+    		tableCell += "<td>"+data[key].IPADDR+"</td>";
+    		tableCell += "<td>"+data[key].NETMASK+"</td>";
+    		tableCell += "<td>"+data[key].GATEWAY+"</td>";
+    		tableCell += "<td>"+data[key].DUPLEX+"</td>";
+    		tableCell += "<td>"+data[key].SPEED+"</td>";
+    		tableCell += "<td>"+data[key].RXPACKETS+"</td>";
+    		tableCell += "<td>"+data[key].TXPACKETS+"</td>";
+    		tableCell += "</tr>";
+    	}
+    	$("#cell").html(tableCell);
+    }
+
+    /**
+     * 缓存网卡信息列表(备用)
+     */
+    function cacheNetworkListBak(data) {
+        for (var key in data) {
+            networkCache[key] = data[key];
+        }
+    }
+
+    /**
+     * 缓存网卡信息列表
+     */
+    function cacheNetworkList(data) {
+        for (var key in data) {
+            var device = data[key].DEVICE;
+            var info = data[key];
+            //delete info["DEVICE"];
+            networkCache[device] = info;
+            console.log(networkCache)
+        }
+    }
+
+    /**
+     * 更新网卡信息缓存
+     */
+    function updateNetworkCache(data) {
+        var device = data.DEVICE;
+        delete data["DEVICE"];
+        networkCache[device] = data;
+    }
+
+    /**
+     * 设置网卡信息
+     */
+    function setNetworkInfo(type) {
+        var info = networkCache[type];
+        if (info!=null && info != "undefined") {
+        	$("#networkType").val(info.DEVICE);
+            $("#ip").val(info.IPADDR);
+            $("#netmask").val(info.NETMASK);
+            $("#gateway").val(info.GATEWAY);
+            
+        }
+    }
+
+    /**
+     * 保存网络配置
+     */
+    function save_network() {
+        var data = $("#networkForm").serialize();
+        $.ajax({
+            url: "/network/save_network",
+            type: "post",
+            data: data,
+            dataType: "JSON",
+            success: function(data) {
+                if (data!=null) {
+                    layer.msg(data.msg);
+                    updateNetworkCache(data.result);
+                } else {
+                    layer.msg("服务器异常");
+                }
+            },
+            error: function(data) {
+                layer.msg("保存网络配置，服务器交互异常");
+            }
+        });
+    }
+</script>
 </html>

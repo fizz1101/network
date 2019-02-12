@@ -44,7 +44,7 @@ public class NetworkController extends BaseController {
      */
     @RequestMapping(value = "/network_list")
     public ModelAndView networkPage() {
-        return new ModelAndView("network.html");
+        return new ModelAndView("/networkFrame.html");
     }
 
     /**
@@ -52,7 +52,7 @@ public class NetworkController extends BaseController {
      * @return
      */
     public ModelAndView routePage() {
-        return new ModelAndView("route.html");
+        return new ModelAndView("routeFrame.html");
     }
 
     /**
@@ -136,7 +136,7 @@ public class NetworkController extends BaseController {
             infoMap.putAll(packetMap);
             netInfoList.add(infoMap);
         }
-        resMap.put("totle", netInfoList.size());
+        resMap.put("total", netInfoList.size());
         resMap.put("row", netInfoList);
         ResponseEntity entity = new ResponseEntity(ErrorCodeEnum.SUCCESS, resMap);
         renderJson(response, entity);

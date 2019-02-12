@@ -9,6 +9,6 @@ public class MyWebMvcConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/").setViewName("network.html");
+        registry.addViewController("/").setViewName("network_old.html");
     }
 }
