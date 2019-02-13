@@ -149,8 +149,8 @@ public class ShellUtil {
      * @throws IOException
      * @throws InterruptedException
      */
-    public static void setSpeedAndWork(String device, int speed, String work) throws IOException, InterruptedException {
-        String cmd = "ethtool -s " + device + " speed " + speed + " work " + work;
+    public static void setSpeedAndWork(String device, String speed, String work) throws IOException, InterruptedException {
+        String cmd = "ethtool -s " + device + " speed " + speed + " duplex " + work;
         exec(cmd);
     }
 
@@ -224,7 +224,7 @@ public class ShellUtil {
      */
     public static void updateRoute(Network network, String opt) throws IOException, InterruptedException {
         //centos7
-        String cmd = "ip route " + opt + " " + network.getIp() + " dev " + network.getName() + " proto static metric 100";
+        String cmd = "ip route " + opt + " " + network.getIpAddr() + " dev " + network.getDevice() + " proto static metric 100";
         if(!StringUtils.isEmpty(network.getGateway())) {
             cmd += " via " + network.getGateway();
         }

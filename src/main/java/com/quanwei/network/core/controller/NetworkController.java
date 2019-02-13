@@ -51,8 +51,9 @@ public class NetworkController extends BaseController {
      * 路由列表页面
      * @return
      */
+    @RequestMapping(value = "/route_list")
     public ModelAndView routePage() {
-        return new ModelAndView("routeFrame.html");
+        return new ModelAndView("/routeFrame.html");
     }
 
     /**
@@ -261,34 +262,38 @@ public class NetworkController extends BaseController {
                 NetworkConf.IPADDR, NetworkConf.NETMASK, NetworkConf.GATEWAY);
         //修改ip
         if (oldNetworkMap.containsKey(NetworkConf.IPADDR)) {
-            ShellUtil.updateNetwork(filePath, NetworkConf.IPADDR, network.getIp());
+            ShellUtil.updateNetwork(device, NetworkConf.IPADDR, network.getIpAddr());
         } else {
-            String content = NetworkConf.IPADDR + "=" + network.getIp();
+            String content = NetworkConf.IPADDR + "=" + network.getIpAddr();
             ShellUtil.addToFile(filePath, content, true);
         }
         //修改掩码
         if (oldNetworkMap.containsKey(NetworkConf.NETMASK)) {
-            ShellUtil.updateNetwork(filePath, NetworkConf.NETMASK, network.getNetmask());
+            ShellUtil.updateNetwork(device, NetworkConf.NETMASK, network.getNetmask());
         } else {
             String content = NetworkConf.NETMASK + "=" + network.getNetmask();
             ShellUtil.addToFile(filePath, content, true);
         }
         //修改网关
         if (oldNetworkMap.containsKey(NetworkConf.GATEWAY)) {
-            ShellUtil.updateNetwork(filePath, NetworkConf.GATEWAY, network.getGateway());
+            ShellUtil.updateNetwork(device, NetworkConf.GATEWAY, network.getGateway());
         } else {
             String content = NetworkConf.GATEWAY + "=" + network.getGateway();
             ShellUtil.addToFile(filePath, content, true);
         }
         //修改开关
         if (oldNetworkMap.containsKey(NetworkConf.ONBOOT)) {
-            ShellUtil.updateNetwork(filePath, NetworkConf.ONBOOT, network.getBoot());
+            ShellUtil.updateNetwork(device, NetworkConf.ONBOOT, network.getOnBoot());
         } else {
-            String content = NetworkConf.ONBOOT + "=" + network.getBoot();
+            String content = NetworkConf.ONBOOT + "=" + network.getOnBoot();
             ShellUtil.addToFile(filePath, content, true);
         }
         //修改速率与工作模式
-        ShellUtil.setSpeedAndWork(device, ParamUtil.getRequiredInteger(paramMap, "speed"), ParamUtil.getRequiredString(paramMap, "work"));
+        String onBoot = ParamUtil.getString(paramMap, "duplex");
+        String speed = ParamUtil.getString(paramMap, "speed");
+        if (onBoot!=null&&!"auto".equalsIgnoreCase(onBoot)&&speed!=null&&!"auto".equalsIgnoreCase(speed)) {
+            ShellUtil.setSpeedAndWork(device, speed, onBoot);
+        }
 
         /*Map<String, Object> oldNetworkMap = ShellUtil.readFile(filePath, NetworkConf.DEVICE, NetworkConf.ONBOOT,
                 NetworkConf.IPADDR, NetworkConf.NETMASK, NetworkConf.GATEWAY);
@@ -317,7 +322,7 @@ public class NetworkController extends BaseController {
         int type = 1;
         Object result = "";
         try {
-            String device = network.getName();
+            String device = network.getDevice();
             if (!StringUtils.isEmpty(device)) {
                 Map<String, String> networkInfoMap = new HashMap<>();
                 Map<String, String> replaceMap = new HashMap<>();
@@ -330,7 +335,7 @@ public class NetworkController extends BaseController {
                 for (List<String> list_line : list_content) {
                     key_list.add(list_line.get(0));
                 }
-                String ip = network.getIp();
+                String ip = network.getDevice();
                 if (!StringUtils.isEmpty(ip)) {
                     if (key_list.contains(NetworkConf.IPADDR)) {
                         String oldStrRegex = "(?<=((^|\\s+)" + NetworkConf.IPADDR + "=))(.+?)(?=($|\\s+))";
@@ -445,6 +450,9 @@ public class NetworkController extends BaseController {
                 for (int i=1; i<arr_column.length; i++) {
                     routeInfo.put(arr_column[i], arr_column[++i]);
                 }
+                if (!routeInfo.containsKey("via")) {
+                    routeInfo.put("via", "0.0.0.0");
+                }
                 /*Network network = new Network();
                 network.setIp(arr_column[0]);
                 network.setGateway(arr_column[1]);
@@ -461,17 +469,27 @@ public class NetworkController extends BaseController {
 
     /**
      * 保存路由配置
+     * @param network 网卡实体类
      * @param request
      *  opt: 操作类型("add"/"del")(必传)
      * @param response
-     * @param network 网卡实体类
      * @throws Exception
      */
     @RequestMapping(value = "save_route")
     public void saveRouteInfo(HttpServletRequest request, HttpServletResponse response,
-                                             Network network) throws Exception {
+                              @Validated Network network) throws Exception {
         Map<String, Object> paramMap = ParamUtil.getMapData(request);
         String opt = ParamUtil.getRequiredString(paramMap, "opt");
+        //处理掩码
+        int count = 0;
+        String[] arr = network.getNetmask().split("\\.");
+        for (int i=0; i<arr.length; i++) {
+            if (!"0".equals(arr[i])) {
+                count++;
+            }
+        }
+        String newIp = network.getIpAddr() + "/" + 8*count;
+        network.setIpAddr(newIp);
         //更新路由信息
         ShellUtil.updateRoute(network, opt);
         ResponseEntity responseEntity = new ResponseEntity(ErrorCodeEnum.SUCCESS, "");

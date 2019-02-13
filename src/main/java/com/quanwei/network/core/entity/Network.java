@@ -12,18 +12,18 @@ public class Network {
     /**
      * 网口名称
      */
-    private String name;
+    private String device;
 
     /**
      * 网口启用开关("YES":开;"NO":关)
      */
-    private String boot;
+    private String onBoot;
 
     /**
      * 网络ip地址
      */
     @Pattern(regexp = RegexUtil.REGEX_IP, message = "ip地址格式错误")
-    private String ip;
+    private String ipAddr;
 
     /**
      * 子网掩码
@@ -37,28 +37,28 @@ public class Network {
     @Pattern(regexp = RegexUtil.REGEX_IP, message = "网关格式错误")
     private String gateway;
 
-    public String getName() {
-        return name;
+    public String getDevice() {
+        return device;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setDevice(String device) {
+        this.device = device;
     }
 
-    public String getBoot() {
-        return boot;
+    public String getOnBoot() {
+        return onBoot;
     }
 
-    public void setBoot(String boot) {
-        this.boot = boot;
+    public void setOnBoot(String onBoot) {
+        this.onBoot = onBoot;
     }
 
-    public String getIp() {
-        return ip;
+    public String getIpAddr() {
+        return ipAddr;
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
+    public void setIpAddr(String ipAddr) {
+        this.ipAddr = ipAddr;
     }
 
     public String getNetmask() {

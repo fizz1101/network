@@ -6,12 +6,14 @@
 	<style>
 		*{margin: 0; padding: 0;}
 		body {background-color: rgb(225,233,244);}
+
 		table{font-size: 18px; text-align: center; width: 95%; max-width: 99%; margin: 10px auto 0; border: 1px solid gainsboro;}
 		table tr{height: 40px; line-height: 40px;}
 		table tr:nth-child(2n+1){background-color: rgb(225,233,250);}
 		table tr:hover{background-color: rgb(225,250,250);}
 		table th{font-size: 20px; color: white; background-color: #6196BB;}
 		table input[type='checkbox']{margin-left: 5px;}
+
 		#title{height: 36px; line-height: 36px; padding-left: 20px; font-size: 20px; font-weight: bold; color: white; background-color: #467ca2;}
 		#opt{float: right; margin-top: 10px; margin-right: 5%;}
 		#opt input[type='button']{cursor: pointer; background-color: #00C4B2; color: white; padding: 4px 10px; border-radius: 6px; border: 1px solid #cccccc; font-size: 12px;}
@@ -21,7 +23,8 @@
 		form span{width: 30%; display: inline-block; text-align: right;}
 		form input[type="text"]{width: 65%; text-align: left;}
 		form select{width: 65%; text-align: left;}
-		
+
+
 	</style>
 </head>
 <body>
@@ -41,55 +44,7 @@
 				<th>发报文数</th>
 			</tr>
 		</thead>
-		<tbody id="cell">
-			<tr>
-				<td><input type="checkbox" /></td>
-				<td>row 1 col 1</td>
-				<td>row 1 col 2</td>
-				<td>row 1 col 3</td>
-				<td>row 1 col 4</td>
-				<td>row 1 col 5</td>
-				<td>row 1 col 6</td>
-				<td>row 1 col 7</td>
-				<td>row 1 col 8</td>
-				<td>row 1 col 9</td>
-			</tr>
-			<tr>
-				<td><input type="checkbox" /></td>
-				<td>row 2 col 1</td>
-				<td>row 2 col 2</td>
-				<td>row 2 col 3</td>
-				<td>row 2 col 4</td>
-				<td>row 2 col 5</td>
-				<td>row 2 col 6</td>
-				<td>row 2 col 7</td>
-				<td>row 2 col 8</td>
-				<td>row 2 col 9</td>
-			</tr>
-			<tr>
-				<td><input type="checkbox" /></td>
-				<td>row 3 col 1</td>
-				<td>row 3 col 2</td>
-				<td>row 3 col 3</td>
-				<td>row 3 col 4</td>
-				<td>row 3 col 5</td>
-				<td>row 3 col 6</td>
-				<td>row 3 col 7</td>
-				<td>row 3 col 8</td>
-				<td>row 3 col 9</td>
-			</tr>
-			<tr>
-				<td><input type="checkbox" /></td>
-				<td>row 4 col 1</td>
-				<td>row 4 col 2</td>
-				<td>row 4 col 3</td>
-				<td>row 4 col 4</td>
-				<td>row 4 col 5</td>
-				<td>row 4 col 6</td>
-				<td>row 4 col 7</td>
-				<td>row 4 col 8</td>
-				<td>row 4 col 9</td>
-			</tr>
+		<tbody id="tbody">
 		</tbody>
 	</table>
 	<div id="opt">
@@ -97,17 +52,22 @@
 		<input type="button" value="编辑" id="edit" />
 	</div>
 </body>
-<div id="div_edit" style="display: none;">
+<div id="networkDialog" style="display: none;">
 	<form id="networkForm" onsubmit="check(this)">
         <div>
             <span>网卡：</span>
-            <select id="networkType" name="name">
-                <option value="">请选择</option>
-            </select>
+			<input type="text" id="device" name="device" readonly="readonly" style="border: 0" />
         </div>
+		<div>
+			<span>开关：</span>
+			<select id="boot" name="onBoot">
+				<option value="no">禁用</option>
+				<option value="yes">启用</option>
+			</select>
+		</div>
         <div>
             <span>Ipv4 地址：</span>
-            <input type="text" id="ip" name="ip" />
+            <input type="text" id="ip" name="ipAddr" />
         </div>
         <div>
             <span>子网掩码：</span>
@@ -117,6 +77,23 @@
             <span>网关：</span>
             <input type="text" id="gateway" name="gateway" />
         </div>
+		<div>
+			<span>工作模式：</span>
+			<select id="work" name="duplex">
+				<option value="auto">auto</option>
+				<option value="Full">Full</option>
+				<option value="Half">Half</option>
+			</select>
+		</div>
+		<div>
+			<span>速率：</span>
+			<select id="speed" name="speed">
+				<option value="auto">auto</option>
+				<option value="10">10Mb/s</option>
+				<option value="100">100Mb/s</option>
+				<option value="1000">1000Mb/s</option>
+			</select>
+		</div>
     </form>
 </div>
 <script src="script/jquery.min.js"></script>
@@ -129,26 +106,27 @@
 		initData();
 
 		//选行记录
-		$("#cell tr").click(function() {
-			$("input[type='checkbox']", this).click();
-			/*var child_target = $(this).children()[0].nodeName;
-			if (child_target != "TH") {
-				$("input[type='checkbox']", this).click();
-			}*/
+        $("#tbody").on('click', 'tr', function() {
+            $("input[type='checkbox']", this).click();
+            /*var child_target = $(this).children()[0].nodeName;
+            if (child_target != "TH") {
+                $("input[type='checkbox']", this).click();
+            }*/
 		})
-		//查看按钮点击
-		$("#show").click(function() {
-			var select = $("#cell input:checked").size();
+
+		//编辑按钮点击
+		$("#edit").click(function() {
+			var select = $("#tbody input:checked").size();
 			if (select < 1) {
 				layer.msg("请选择数据行");
 			} else if (select > 1) {
 				layer.msg("只能选择一行数据");
 			} else {
-				var target = $("#cell input:checked").attr("data-device");
+				var target = $("#tbody input:checked").attr("data-device");
 				layer.open({
 					type: 1,
 					title: "编辑接口信息",
-					content: $("#div_edit"),
+					content: $("#networkDialog"),
 					shadeClose: true,
 					success: function(index, layerno) {
 						//显示接口详细信息
@@ -165,11 +143,29 @@
 				});
 			}
 		})
+
+		/*setTimeout(function() {
+            var tableBody = "";
+			//生成每行的数据展示
+			tableBody += "<tr>";
+			tableBody += "<td><input type='checkbox' data-device='"+1+"' /></td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "</tr>";
+            $("#tbody").html(tableBody);
+		}, 1000)*/
 	})
 	
 	//初始化加载数据
 	function initData() {
-		networkType();
+		//networkType();
 		networkList();
 	}
 	
@@ -178,38 +174,6 @@
      */
     function check(obj) {
 		return true;
-    }
-
-    /**
-     * 获取网卡类型
-     */
-    function networkType() {
-        $.ajax({
-            url: "/network/get_network_type",
-            type: "post",
-            dataType: "json",
-            success: function(data) {
-                if (data!=null && data.code=="0") {
-                    //setNetworkType(data.result);
-                } else {
-                    layer.msg(data.msg);
-                }
-            },
-            error: function(data) {
-                layer.msg("获取网卡类型，服务器交互异常");
-            }
-        })
-    }
-
-    /**
-     * 设置网卡类型
-     */
-    function setNetworkType(data) {
-        var option = "";
-        for (var key in data) {
-            option += "<option value='"+data[key].key+"'>"+data[key].value+"</option>";
-        }
-        $("#networkType").html(option);
     }
 
     /**
@@ -224,32 +188,9 @@
                 if (data!=null && data.code=="0") {
                 	setNetworkList(data.result.row);
                     cacheNetworkList(data.result.row);
-                    //setNetworkInfo("ens32");
                 } else {
                     layer.msg(data.msg);
                 }
-            },
-            error: function(data) {
-                layer.msg("获取网络配置列表，服务器交互异常");
-            }
-        })
-    }
-
-    /**
-     * 获取网卡信息列表(备用)
-     */
-    function networkListBak() {
-        $.ajax({
-            url: "/network/get_network_list_bak",
-            type: "post",
-            dataType: "json",
-            success: function(data) {
-            	if (data!=null && data.code=="0") {
-                    cacheNetworkListBak(data.result);
-                    setNetworkInfo("ens32");
-            	} else {
-                    layer.msg(data.msg);
-            	}
             },
             error: function(data) {
                 layer.msg("获取网络配置列表，服务器交互异常");
@@ -261,32 +202,27 @@
      * 显示接口列表
      */
     function setNetworkList(data) {
-    	var tableCell;
+    	var tableBody = "";
     	for (var key in data) {
     		//生成每行的数据展示
-    		tableCell += "<tr>";
-    		tableCell += "<td><input type='checkbox' data-device='"+data[key].DEVICE+"' /></td>";
-    		tableCell += "<td>"+data[key].DEVICE+"</td>";
-    		tableCell += "<td>"+data[key].ONBOOT+"</td>";
-    		tableCell += "<td>"+data[key].IPADDR+"</td>";
-    		tableCell += "<td>"+data[key].NETMASK+"</td>";
-    		tableCell += "<td>"+data[key].GATEWAY+"</td>";
-    		tableCell += "<td>"+data[key].DUPLEX+"</td>";
-    		tableCell += "<td>"+data[key].SPEED+"</td>";
-    		tableCell += "<td>"+data[key].RXPACKETS+"</td>";
-    		tableCell += "<td>"+data[key].TXPACKETS+"</td>";
-    		tableCell += "</tr>";
+            tableBody += "<tr>";
+            tableBody += "<td><input type='checkbox' data-device='"+data[key].DEVICE+"' /></td>";
+            tableBody += "<td>"+data[key].DEVICE+"</td>";
+            var boot = "启用";
+            if (data[key].ONBOOT == "no") {
+                boot = "禁用";
+			}
+            tableBody += "<td>"+boot+"</td>";
+            tableBody += "<td>"+data[key].IPADDR+"</td>";
+            tableBody += "<td>"+data[key].NETMASK+"</td>";
+            tableBody += "<td>"+data[key].GATEWAY+"</td>";
+            tableBody += "<td>"+data[key].DUPLEX+"</td>";
+            tableBody += "<td>"+data[key].SPEED+"</td>";
+            tableBody += "<td>"+data[key].RXPACKETS+"</td>";
+            tableBody += "<td>"+data[key].TXPACKETS+"</td>";
+            tableBody += "</tr>";
     	}
-    	$("#cell").html(tableCell);
-    }
-
-    /**
-     * 缓存网卡信息列表(备用)
-     */
-    function cacheNetworkListBak(data) {
-        for (var key in data) {
-            networkCache[key] = data[key];
-        }
+    	$("#tbody").html(tableBody);
     }
 
     /**
@@ -317,11 +253,13 @@
     function setNetworkInfo(type) {
         var info = networkCache[type];
         if (info!=null && info != "undefined") {
-        	$("#networkType").val(info.DEVICE);
+        	$("#device").val(info.DEVICE);
+        	$("#boot").val(info.ONBOOT);
             $("#ip").val(info.IPADDR);
             $("#netmask").val(info.NETMASK);
             $("#gateway").val(info.GATEWAY);
-            
+            $("#work").val(info.DUPLEX);
+            $("#speed").val(info.SPEED);
         }
     }
 
@@ -330,20 +268,25 @@
      */
     function save_network() {
         var data = $("#networkForm").serialize();
+        layer.load()
         $.ajax({
             url: "/network/save_network",
             type: "post",
             data: data,
             dataType: "JSON",
             success: function(data) {
-                if (data!=null) {
+                layer.closeAll('loading');
+                if (data!=null && data.code=="0") {
                     layer.msg(data.msg);
-                    updateNetworkCache(data.result);
+                    layer.closeAll('page');
+                    //updateNetworkCache(data.result);
+					networkList();
                 } else {
                     layer.msg("服务器异常");
                 }
             },
             error: function(data) {
+                layer.closeAll('loading');
                 layer.msg("保存网络配置，服务器交互异常");
             }
         });

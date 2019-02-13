@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
  */
 public class RegexUtil {
 
-    public static final String REGEX_IP = "^(1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]\\d|[1-9])(\\.(1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]\\d|\\d)){3}$";
+    public static final String REGEX_IP = "^(0|1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]\\d|[1-9])(\\.(0|1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]\\d|\\d)){3}$";
 
     /**
      * 校验ip地址
