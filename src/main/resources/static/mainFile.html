@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="style/font-awesome/css/font-awesome.min.css">
+    <!--<link rel="stylesheet" href="script/layer/theme/default/layer.css">-->
+    <link rel="stylesheet" href="style/default.css">
+    <script src="script/jquery.min.js"></script>
+    <script src="script/layer/layer.js"></script>
+    <style>
+    	* {
+    		margin: 0;
+    		padding: 0;
+    	}
+    	#menu {
+    		float: left;
+    		width: 210px;
+    	}
+    	#main {
+    		overflow: hidden;
+    	}
+    	.clear {
+    		clear: both;
+    	}
+    </style>
+</head>
+<body>
+    <!--<section id="common"></section>-->
+    <header></header>
+    <section>
+	    <div id="menu"></div>
+	    <div id="main"></div>
+	    <div class="clear"></div>
+    </section>
+    <footer></footer>
+</body>
+<!--<script src="/script/jquery.min.js"></script>-->
+<script>
+    // $("#common").load("common.html");
+    $("header").load("header.html");
+    $("#menu").load("menu.html");
+//  $("#main").load("route.html");
+    $("footer").load("footer.html");
+    $(function() {
+    	var target = window.location.hash;
+    	target = target.replace("#", "");
+    	if (target == "") {
+    		$("#main").load("welcome.html");
+    	} else {
+    		$("#main").load(target+".html");
+    	}
+    })
+</script>
+</html>

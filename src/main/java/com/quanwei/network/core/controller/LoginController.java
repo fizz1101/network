@@ -46,6 +46,17 @@ public class LoginController extends BaseController {
         renderJson(response, responseEntity);
     }
 
+    /**
+     * 登出
+     * @param request
+     * @param response
+     */
+    @RequestMapping(value = "/logout")
+    public ModelAndView logout(HttpServletRequest request, HttpServletResponse response) {
+        request.getSession().removeAttribute("user");
+        return new ModelAndView("login.html");
+    }
+
     @RequestMapping("test")
     public void test(@RequestBody Map<String, String> dataMap) {
         for (String key : dataMap.keySet()) {

@@ -39,6 +39,15 @@ public class NetworkController extends BaseController {
     private static final String ROUTEHEADERFILTER2 = "Destination";
 
     /**
+     * 登入后框架页面
+     * @return
+     */
+    @RequestMapping(value = "main")
+    public ModelAndView testPage() {
+        return new ModelAndView("/mainFile.html");
+    }
+
+    /**
      * 网口列表页面
      * @return
      */
@@ -446,19 +455,33 @@ public class NetworkController extends BaseController {
             if (!route.contains(ROUTEHEADERFILTER1) && !route.contains(ROUTEHEADERFILTER2)) {
                 String[] arr_column = route.split("\\s+");
                 Map<String, String> routeInfo = new HashMap<>();
-                routeInfo.put("ip", arr_column[0]);
+                String net = arr_column[0];
+                String[] arr_net = net.split("/");
+                routeInfo.put("ipAddr", arr_net[0]);
+                if (arr_net.length > 1) {
+                    int bit = Integer.parseInt(arr_net[1]);
+                    List<String> list_netmask = Arrays.asList(new String[] {"0","0","0","0"});
+                    for (int i=0; i<bit/8; i++) {
+                        list_netmask.set(i, "255");
+                    }
+                    String netmask = list_netmask.toString().replace("[", "")
+                            .replace("]", "").replace(",", ".");
+                    routeInfo.put("netmask", netmask);
+                } else {
+                    routeInfo.put("netmask", "0.0.0.0");
+                }
                 for (int i=1; i<arr_column.length; i++) {
                     routeInfo.put(arr_column[i], arr_column[++i]);
                 }
-                if (!routeInfo.containsKey("via")) {
+                /*if (!routeInfo.containsKey("via")) {
                     routeInfo.put("via", "0.0.0.0");
-                }
-                /*Network network = new Network();
-                network.setIp(arr_column[0]);
-                network.setGateway(arr_column[1]);
-                network.setNetmask(arr_column[2]);
-                network.setName(arr_column[7]);*/
-                resList.add(routeInfo);
+                }*/
+                Network network = new Network();
+                network.setIpAddr(routeInfo.get("ipAddr"));
+                network.setNetmask(routeInfo.get("netmask"));
+                network.setGateway(routeInfo.get("via")!=null?routeInfo.get("via"):"0.0.0.0");
+                network.setDevice(routeInfo.get("dev"));
+                resList.add(network);
             }
         }
         resMap.put("total", resList.size());
