@@ -17,6 +17,7 @@ public class NetworkConf {
     public static final String GATEWAY = "GATEWAY";
     public static final String SPEED = "SPEED";
     public static final String DUPLEX = "DUPLEX";
+    public static final String LINK = "LINK DETECTED";
 
     public static String path;
 

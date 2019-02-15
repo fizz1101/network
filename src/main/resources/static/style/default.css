@@ -13,6 +13,7 @@ form{width: 300px; margin: 15px 10px 0;}
 form div{margin-bottom: 5px;}
 form span{width: 30%; display: inline-block; text-align: right;}
 form input[type="text"]{width: 65%; text-align: left;}
+form input[type="password"]{width: 65%; text-align: left;}
 form select{width: 65%; text-align: left;}
 
 .clear{clear: both;}

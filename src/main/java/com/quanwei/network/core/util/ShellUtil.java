@@ -142,6 +142,34 @@ public class ShellUtil {
     }
 
     /**
+     * 获取网卡运行状态信息
+     * @param device 网卡名称
+     * @param columns 所需字段(不传即所有内容)
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public static Map<String, Object> getNetMessage(String device, String... columns) throws IOException, InterruptedException {
+        Map<String, Object> netMsgMap = new HashMap<>();
+        String cmd = "ethtool " + device;
+        if (!StringUtils.isEmpty(columns)) {
+            String grep = "";
+            for (String column : columns) {
+                grep += column + "|";
+            }
+            grep = grep.substring(0, grep.length()-1);
+            cmd += " | grep -iE '" + grep + "'";
+        }
+        String content = exec(cmd);
+        String[] arr_conline = content.split("\r\n");
+        for (String line : arr_conline) {
+            String[] arr_column = line.replaceAll("\\s+", "").split(":");
+            netMsgMap.put(arr_column[0].toUpperCase(), arr_column[1]);
+        }
+        return netMsgMap;
+    }
+
+    /**
      * 设置网口速率与工作模式
      * @param device 网卡名称
      * @param speed 速率

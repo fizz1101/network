@@ -44,7 +44,7 @@ public class NetworkController extends BaseController {
      */
     @RequestMapping(value = "main")
     public ModelAndView testPage() {
-        return new ModelAndView("/mainFile.html");
+        return new ModelAndView("/main.html");
     }
 
     /**
@@ -112,8 +112,9 @@ public class NetworkController extends BaseController {
      *             "GATEWAY": "192.168.1.1", //网关
      *             "RXPACKETS": " 1931284", //接收包
      *             "DEVICE": "ens32", //接口名称
-     *             "ONBOOT": "yes", //是否启用("yes"/"no")
+     *             "ONBOOT": "yes", //是否启用(yes/no)
      *             "DUPLEX": "auto", //工作模式(Full/Half)
+     *             "LINKDETECTED": "UP", //运行状态(UP/DOWN)
      *             "TXPACKETS": " 37411156", //发送包
      *             "IPADDR": "192.168.1.135" //IPV4地址
      *         }
@@ -131,8 +132,17 @@ public class NetworkController extends BaseController {
             String device = fileName.replace(NetworkConf.fileNameHeader, "");
             Map<String, Object> infoMap = ShellUtil.readFile(filePath, NetworkConf.DEVICE, NetworkConf.ONBOOT,
                     NetworkConf.IPADDR, NetworkConf.NETMASK, NetworkConf.GATEWAY);
-            //获取网卡速率与工作模式
-            Map<String, Object> swMap = new HashMap<>();
+            //获取网卡状态信息
+            Map<String, Object> netMap = ShellUtil.getNetMessage(device, NetworkConf.SPEED, NetworkConf.DUPLEX, NetworkConf.LINK);
+            String linkKey = NetworkConf.LINK.replace(" ", "");
+            String run_status = (String) netMap.get(linkKey);
+            if ("yes".equalsIgnoreCase(run_status)) {
+                netMap.put(linkKey, "UP");
+            } else {
+                netMap.put(linkKey, "DOWN");
+            }
+            infoMap.putAll(netMap);
+            /*Map<String, Object> swMap = new HashMap<>();
             List<Map<String, Object>> swList = ShellUtil.getSpeedAndWork(device);
             if (swList.size() == 1) {
                 swMap = swList.get(0);
@@ -140,7 +150,7 @@ public class NetworkController extends BaseController {
                 swMap.put(NetworkConf.SPEED, "auto");
                 swMap.put(NetworkConf.DUPLEX, "auto");
             }
-            infoMap.putAll(swMap);
+            infoMap.putAll(swMap);*/
             //获取网口接收包
             Map<String, Object> packetMap = ShellUtil.getNetworkPacket(device);
             infoMap.putAll(packetMap);
@@ -298,11 +308,11 @@ public class NetworkController extends BaseController {
             ShellUtil.addToFile(filePath, content, true);
         }
         //修改速率与工作模式
-        String onBoot = ParamUtil.getString(paramMap, "duplex");
+        /*String onBoot = ParamUtil.getString(paramMap, "duplex");
         String speed = ParamUtil.getString(paramMap, "speed");
         if (onBoot!=null&&!"auto".equalsIgnoreCase(onBoot)&&speed!=null&&!"auto".equalsIgnoreCase(speed)) {
             ShellUtil.setSpeedAndWork(device, speed, onBoot);
-        }
+        }*/
 
         /*Map<String, Object> oldNetworkMap = ShellUtil.readFile(filePath, NetworkConf.DEVICE, NetworkConf.ONBOOT,
                 NetworkConf.IPADDR, NetworkConf.NETMASK, NetworkConf.GATEWAY);
@@ -464,8 +474,8 @@ public class NetworkController extends BaseController {
                     for (int i=0; i<bit/8; i++) {
                         list_netmask.set(i, "255");
                     }
-                    String netmask = list_netmask.toString().replace("[", "")
-                            .replace("]", "").replace(",", ".");
+                    String netmask = list_netmask.toString().replace("[", "").replace("]", "")
+                            .replace(",", ".").replace(" ", "");
                     routeInfo.put("netmask", netmask);
                 } else {
                     routeInfo.put("netmask", "0.0.0.0");

@@ -32,7 +32,7 @@ public class RegexUtil {
     }
 
     public static void main(String[] args) {
-        String ip = "1.168.100.255";
+        String ip = "0.0.0.0";
         System.out.println(checkIp(ip));
     }
 

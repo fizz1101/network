@@ -13,18 +13,17 @@
 		table tr:nth-child(2n+1){background-color: rgb(225,233,250);}
 		table tr:hover{background-color: rgb(225,250,250);}
 		table th{font-size: 20px; color: white; background-color: #6196BB;}
-		table input[type='checkbox']{margin-left: 5px;}*/
+		table input[type='checkbox']{margin-left: 5px;}
 
-		#title{height: 36px; line-height: 36px; padding-left: 20px; font-size: 20px; font-weight: bold; color: white; background-color: #467ca2;}
-		#opt{float: right; margin-top: 10px; margin-right: 5%;}
-		#opt input[type='button']{cursor: pointer; background-color: #00C4B2; color: white; padding: 4px 10px; border-radius: 6px; border: 1px solid #cccccc; font-size: 12px;}
-	
-		/*form{width: 300px; margin: 15px 10px 0;}
+		form{width: 300px; margin: 15px 10px 0;}
 		form div{margin-bottom: 5px;}
 		form span{width: 30%; display: inline-block; text-align: right;}
 		form input[type="text"]{width: 65%; text-align: left;}
 		form select{width: 65%; text-align: left;}*/
 
+		#title{height: 36px; line-height: 36px; padding-left: 20px; font-size: 20px; font-weight: bold; color: white; background-color: #467ca2;}
+		#opt{float: right; margin-top: 10px; margin-right: 5%;}
+		#opt input[type='button']{cursor: pointer; background-color: #00C4B2; color: white; padding: 4px 10px; border-radius: 6px; border: 1px solid #cccccc; font-size: 12px;}
 
 	</style>
 </head>
@@ -71,8 +70,8 @@
 		</div>
     </form>
 </div>
-<!--<script src="script/jquery.min.js"></script>
-<script src="script/layer/layer.js"></script>-->
+<!--<script src="script/jquery.min.js"></script>-->
+<script src="script/layer/layer.js"></script>
 <script>
 	var routeCache = {};
 
@@ -83,27 +82,23 @@
 		//选行记录
         $("#tbody").on('click', 'tr', function() {
             $("input[type='checkbox']", this).click();
-            /*var child_target = $(this).children()[0].nodeName;
-            if (child_target != "TH") {
-                $("input[type='checkbox']", this).click();
-            }*/
 		})
 
 		//新增按钮点击
 		$("#add").click(function() {
-		    $("#routeForm").reset();
+		    $("#routeForm")[0].reset();
 			layer.open({
 				type: 1,
 				title: "新增路由信息",
 				content: $("#routeDialog"),
 				shadeClose: true,
 				success: function(index, layerno) {
-					//成功操作
+					//成功弹框后操作
 				},
 				btn: ['保存'],
 				yes: function(index, layerno) {
 					//保存接口配置
-                    save_route();
+					save_route();
 				},
 				cancel: function() {
 					//layer.msg("关闭弹窗");
@@ -222,25 +217,25 @@
      */
     function save_route() {
         var data = $("#routeForm").serialize();
-        layer.load();
+//      layer.load();
         $.ajax({
             url: "/network/save_route",
             type: "post",
             data: data,
             dataType: "JSON",
             success: function(data) {
-                layer.closeAll('loading');
+//              layer.closeAll('loading');
                 if (data!=null && data.code=="0") {
                     layer.msg(data.msg);
                     layer.closeAll('page');
                     //updateRouteCache(data.result);
 					routeList();
                 } else {
-                    layer.msg("服务器异常");
+                    layer.msg(data.msg);
                 }
             },
             error: function(data) {
-                layer.closeAll('loading');
+//              layer.closeAll('loading');
                 layer.msg("保存路由配置，服务器交互异常");
             }
         });
@@ -253,15 +248,23 @@
     function del_route(ids) {
         var data = routeCache[ids];
         data["opt"] = "del";
+        layer.load();
 		$.ajax({
 		    url: "/network/save_route",
 			type: "post",
 			data: data,
 			dataType: "json",
 			success: function (data) {
-
+				layer.closeAll("loading");
+                if (data!=null && data.code=="0") {
+                    layer.msg(data.msg);
+                    routeList();
+                } else {
+                    layer.msg(data.msg);
+                }
             },
 			error: function () {
+                layer.closeAll("loading");
 				layer.msg("删除路由配置，服务器交互异常");
             }
         })
