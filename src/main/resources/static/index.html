@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    .clear {
+        clear: both;
+    }
+    header {
+        text-align: center;
+        padding-bottom: 5px;
+        margin-bottom: 5px;
+        border-bottom: 1px dashed black;
+    }
+    section {
+        width: 30%;
+        margin: 0 auto;
+    }
+    form div {
+        margin-bottom: 5px;
+    }
+    form span {
+        width: 30%;
+        display: inline-block;
+        text-align: right;
+    }
+    form input[type="text"] {
+        width: 65%;
+        text-align: left;
+        border: none;
+        border-bottom: 1px solid black;
+    }
+    form select {
+        width: 65%;
+        text-align: left;
+    }
+    form button {
+        /*border: 0;
+        outline: none;
+        background-color: transparent;*/
+        padding: 5px 10px;
+        float: right;
+        margin-top: 10px;
+        margin-right: 5%;
+    }
+    textarea {
+        width: 100%;
+        outline: 0 none;
+        resize: none;
+    }
+    .underline {
+        width: 100%;
+        border: none;
+        border-bottom: 1px solid black;
+        margin: 5px 0;
+    }
+</style>
+<body>
+    <section>
+        <header>网络配置</header>
+        <!--<div class="underline"></div>-->
+        <form id="networkForm" onsubmit="check(this)">
+            <div>
+                <span>网卡：</span>
+                <select id="networkType" name="name">
+                    <option value="">请选择</option>
+                </select>
+            </div>
+            <div>
+                <span>Ipv4 地址：</span>
+                <input type="text" id="ip" name="ip" />
+            </div>
+            <div>
+                <span>子网掩码：</span>
+                <input type="text" id="netmask" name="netmask" />
+            </div>
+            <div>
+                <span>网关：</span>
+                <input type="text" id="gateway" name="gateway" />
+            </div>
+            <div>
+                <button type="button" id="btn_network_save">保存</button>
+                <button type="button" id="btn_network_reset">编辑</button>
+                <div class="clear"></div>
+            </div>
+        </form>
+        <div class="underline"></div>
+        <header>路由列表</header>
+        <form id="routeForm" onsubmit="check(this)">
+            <table style="width: 100%">
+                <tr>
+                    <td>目的地址</td>
+                    <td>子网掩码</td>
+                    <td>网关</td>
+                </tr>
+                <tr>
+                    <td>default</td>
+                    <td>0.0.0.0</td>
+                    <td>192.168.1.1</td>
+                </tr>
+                <tr>
+                    <td>192.168.1.0</td>
+                    <td>255.255.255.0</td>
+                    <td>0.0.0.0</td>
+                </tr>
+            </table>
+            <!--<textarea id="routeRule" name="rule"></textarea>-->
+            <div>
+                <button type="button" id="btn_route_del">删除</button>
+                <button type="button" id="btn_route_add">新增</button>
+            </div>
+        </form>
+    </section>
+</body>
+<script src="script/jquery.min.js"></script>
+<script>
+    var networkCache = {};
+    $(function () {
+        networkType();
+        networkList();
+        // routeInfo();
+
+        //变更网卡类型
+        $("#networkType").change(function() {
+            var type = $(this).val();
+            setNetworkInfo(type);
+        })
+
+        //网络保存点击事件
+        $("#btn_network_save").click(function () {
+            save_network();
+        })
+
+        //路由保存点击事件
+        $("#btn_route_save").click(function () {
+            save_route();
+        })
+
+        //textarea自适应
+        $('textarea').each(function () {
+            this.setAttribute('style', 'height:' + (this.scrollHeight) + 'px;overflow-y:hidden;');
+        }).on('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        })
+
+    })
+
+    /**
+     * 校验内容
+     */
+    function check(obj) {
+
+    }
+
+    /**
+     * 获取网卡类型
+     */
+    function networkType() {
+        $.ajax({
+            url: "/network/get_network_type",
+            type: "post",
+            dataType: "json",
+            success: function(data) {
+                if (data!=null && data.code=="0") {
+                    setNetworkType(data.result);
+                } else {
+                    alert(data.msg);
+                }
+            },
+            error: function(data) {
+                alert("获取网卡类型，服务器交互异常");
+            }
+        })
+    }
+
+    /**
+     * 设置网卡类型
+     */
+    function setNetworkType(data) {
+        var option = "";
+        for (var key in data) {
+            option += "<option value='"+data[key].key+"'>"+data[key].value+"</option>";
+        }
+        $("#networkType").html(option);
+    }
+
+    /**
+     * 获取网卡信息列表
+     */
+    function networkList() {
+        $.ajax({
+            url: "/network/get_network_list",
+            type: "post",
+            dataType: "json",
+            success: function(data) {
+                if (data!=null && data.code=="0") {
+                    cacheNetworkList(data.result);
+                    setNetworkInfo("ens32");
+                } else {
+                    alert(data.msg);
+                }
+            },
+            error: function(data) {
+                alert("获取网络配置列表，服务器交互异常");
+            }
+        })
+    }
+
+    /**
+     * 获取网卡信息列表(备用)
+     */
+    function networkListBak() {
+        $.ajax({
+            url: "/network/get_network_list_bak",
+            type: "post",
+            dataType: "json",
+            success: function(data) {
+            	if (data!=null && data.code=="0") {
+                    cacheNetworkListBak(data.result);
+                    setNetworkInfo("ens32");
+            	} else {
+            		alert(data.msg);
+            	}
+            },
+            error: function(data) {
+                alert("获取网络配置列表，服务器交互异常");
+            }
+        })
+    }
+
+    /**
+     * 缓存网卡信息列表
+     */
+    function cacheNetworkList(data) {
+        for (var key in data) {
+            networkCache[key] = data[key];
+        }
+    }
+
+    /**
+     * 缓存网卡信息列表(备用)
+     */
+    function cacheNetworkListBak(data) {
+        for (var key in data) {
+            var device = data[key].DEVICE;
+            var info = data[key];
+            delete info["DEVICE"];
+            networkCache[device] = info;
+            console.log(networkCache)
+        }
+    }
+
+    /**
+     * 更新网卡信息缓存
+     */
+    function updateNetworkCache(data) {
+        var device = data.DEVICE;
+        delete data["DEVICE"];
+        networkCache[device] = data;
+    }
+
+    /**
+     * 设置网卡信息
+     */
+    function setNetworkInfo(type) {
+        var info = networkCache[type];
+        if (info!=null && info != "undefined") {
+            $("#ip").val(info.IPADDR);
+            $("#netmask").val(info.NETMASK);
+            $("#gateway").val(info.GATEWAY);
+        }
+    }
+
+    /**
+     * 保存网络配置
+     */
+    function save_network() {
+        var data = $("#networkForm").serialize();
+        $.ajax({
+            url: "/network/save_network",
+            type: "post",
+            data: data,
+            dataType: "JSON",
+            success: function(data) {
+                if (data!=null) {
+                    alert(data.msg);
+                    updateNetworkCache(data.result);
+                } else {
+                    alert("服务器异常");
+                }
+            },
+            error: function(data) {
+                alert("保存网络配置，服务器交互异常");
+            }
+        });
+    }
+
+    /**
+     * 获取路由信息
+     */
+    function routeInfo() {
+        $.ajax({
+            url: "",
+            type: "post",
+            dataType: "json",
+            success: function() {
+
+            },
+            error: function () {
+                alert("获取路由配置，服务器交互异常");
+            }
+        })
+    }
+
+    /**
+     * 保存路由配置
+     */
+    function save_route() {
+        /*$.ajax({
+            url: "",
+            type: "post",
+            dataType: "json",
+            success: function() {
+
+            },
+            error: function () {
+                alert("保存路由配置，服务器交互异常");
+            }
+        })*/
+    }
+</script>
+</html>

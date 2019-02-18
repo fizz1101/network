@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<style>
+		/**{margin: 0; padding: 0;}*/
+		/*body {background-color: rgb(225,233,244);}*/
+
+		/*table{font-size: 18px; text-align: center; width: 95%; max-width: 99%; margin: 10px auto 0; border: 1px solid gainsboro;}
+		table tr{height: 40px; line-height: 40px;}
+		table tr:nth-child(2n+1){background-color: rgb(225,233,250);}
+		table tr:hover{background-color: rgb(225,250,250);}
+		table th{font-size: 20px; color: white; background-color: #6196BB;}
+		table input[type='checkbox']{margin-left: 5px;}
+
+		form{width: 300px; margin: 15px 10px 0;}
+		form div{margin-bottom: 5px;}
+		form span{width: 30%; display: inline-block; text-align: right;}
+		form input[type="text"]{width: 65%; text-align: left;}
+		form select{width: 65%; text-align: left;}*/
+
+		#title{height: 36px; line-height: 36px; padding-left: 20px; font-size: 20px; font-weight: bold; color: white; background-color: #467ca2;}
+		#opt{float: right; margin-top: 10px; margin-right: 5%;}
+		#opt input[type='button']{cursor: pointer; background-color: #00C4B2; color: white; padding: 4px 10px; border-radius: 6px; border: 1px solid #cccccc; font-size: 12px;}
+
+	</style>
+</head>
+<body>
+	<div id="title">网口列表</div>
+	<table id="networkTable" cellpadding="0" cellspacing="0">
+		<thead>
+			<tr>
+				<th></th>
+				<th>网口名称</th>
+				<th>接口开关</th>
+				<th>ip地址</th>
+				<th>子网掩码</th>
+				<th>网关</th>
+				<th>速率</th>
+				<th>工作模式</th>
+				<th>运行状态</th>
+				<th>收报文数</th>
+				<th>发报文数</th>
+			</tr>
+		</thead>
+		<tbody id="tbody">
+		</tbody>
+	</table>
+	<div id="opt">
+		<input type="button" value="查看" id="show" />
+		<input type="button" value="编辑" id="edit" />
+	</div>
+</body>
+<div id="networkDialog" style="display: none;">
+	<form id="networkForm" onsubmit="check(this)">
+        <div>
+            <span>网卡：</span>
+			<input type="text" id="device" name="device" readonly="readonly" style="border: 0" />
+        </div>
+		<div>
+			<span>开关：</span>
+			<select id="boot" name="onBoot">
+				<option value="no">禁用</option>
+				<option value="yes">启用</option>
+			</select>
+		</div>
+        <div>
+            <span>Ipv4 地址：</span>
+            <input type="text" id="ip" name="ipAddr" />
+        </div>
+        <div>
+            <span>子网掩码：</span>
+            <input type="text" id="netmask" name="netmask" />
+        </div>
+        <div>
+            <span>网关：</span>
+            <input type="text" id="gateway" name="gateway" />
+        </div>
+		<!--<div>
+			<span>工作模式：</span>
+			<select id="work" name="duplex">
+				<option value="auto">auto</option>
+				<option value="Full">Full</option>
+				<option value="Half">Half</option>
+			</select>
+		</div>
+		<div>
+			<span>速率：</span>
+			<select id="speed" name="speed">
+				<option value="auto">auto</option>
+				<option value="10">10Mb/s</option>
+				<option value="100">100Mb/s</option>
+				<option value="1000">1000Mb/s</option>
+			</select>
+		</div>-->
+    </form>
+</div>
+<!--<script src="script/jquery.min.js"></script>-->
+<script src="script/layer/layer.js"></script>
+<script>
+	var networkCache = {};
+
+	$(function() {
+		//初始化加载数据
+		initData();
+
+		//选行记录
+        $("#tbody").on('click', 'tr', function() {
+            $("input[type='checkbox']", this).click();
+		})
+
+		//阻止checkbox外层点击事件
+		$("#tbody").on('click', 'input[type="checkbox"]', function(event) {
+            event.stopPropagation();
+		})
+
+		//编辑按钮点击
+		$("#edit").click(function() {
+			var select = $("#tbody input:checked").size();
+			if (select < 1) {
+				layer.msg("请选择数据行");
+			} else if (select > 1) {
+				layer.msg("只能选择一行数据");
+			} else {
+				var target = $("#tbody input:checked").attr("data-device");
+				layer.open({
+					type: 1,
+					title: "编辑接口信息",
+					content: $("#networkDialog"),
+					shadeClose: true,
+					success: function(index, layerno) {
+						//显示接口详细信息
+						setNetworkInfo(target);
+					},
+					btn: ['保存'],
+					yes: function(index, layerno) {
+						//保存接口配置
+						save_network();
+					},
+					cancel: function() {
+						//layer.msg("关闭弹窗");
+					}
+				});
+			}
+		})
+
+		/*setTimeout(function() {
+            var tableBody = "";
+			//生成每行的数据展示
+			tableBody += "<tr>";
+			tableBody += "<td><input type='checkbox' data-device='"+1+"' /></td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "<td>"+1+"</td>";
+			tableBody += "</tr>";
+            $("#tbody").html(tableBody);
+		}, 1000)*/
+	})
+	
+	//初始化加载数据
+	function initData() {
+		//networkType();
+		networkList();
+	}
+	
+	/**
+     * 校验内容
+     */
+    function check(obj) {
+		return true;
+    }
+
+    /**
+     * 获取网卡信息列表
+     */
+    function networkList() {
+        $.ajax({
+            url: "/network/get_network_list",
+            type: "post",
+            dataType: "json",
+            success: function(data) {
+                if (data!=null && data.code=="0") {
+                	setNetworkList(data.result.row);
+                    cacheNetworkList(data.result.row);
+                } else {
+                    layer.msg(data.msg);
+                }
+            },
+            error: function(data) {
+                layer.msg("获取网络配置列表，服务器交互异常");
+            }
+        })
+    }
+    
+    /**
+     * 显示接口列表
+     */
+    function setNetworkList(data) {
+    	var tableBody = "";
+    	for (var key in data) {
+    		//生成每行的数据展示
+            tableBody += "<tr>";
+            tableBody += "<td><input type='checkbox' data-device='"+data[key].DEVICE+"' /></td>";
+            tableBody += "<td>"+data[key].DEVICE+"</td>";
+            var boot = "启用";
+            if (data[key].ONBOOT == "no") {
+                boot = "禁用";
+			}
+            tableBody += "<td>"+boot+"</td>";
+            tableBody += "<td>"+data[key].IPADDR+"</td>";
+            tableBody += "<td>"+data[key].NETMASK+"</td>";
+            tableBody += "<td>"+data[key].GATEWAY+"</td>";
+            var duplex = "全双工";
+            if (data[key].DUPLEX == "Half") {
+                duplex = "半双工";
+			}
+            tableBody += "<td>"+duplex+"</td>";
+            tableBody += "<td>"+data[key].SPEED+"</td>";
+            tableBody += "<td>"+data[key].LINKDETECTED+"</td>";
+            tableBody += "<td>"+data[key].RXPACKETS+"</td>";
+            tableBody += "<td>"+data[key].TXPACKETS+"</td>";
+            tableBody += "</tr>";
+    	}
+    	$("#tbody").html(tableBody);
+    }
+
+    /**
+     * 缓存网卡信息列表
+     */
+    function cacheNetworkList(data) {
+        for (var key in data) {
+            var device = data[key].DEVICE;
+            var info = data[key];
+            //delete info["DEVICE"];
+            networkCache[device] = info;
+            console.log(networkCache)
+        }
+    }
+
+    /**
+     * 更新网卡信息缓存
+     */
+    function updateNetworkCache(data) {
+        var device = data.DEVICE;
+        delete data["DEVICE"];
+        networkCache[device] = data;
+    }
+
+    /**
+     * 设置网卡信息
+     */
+    function setNetworkInfo(type) {
+        var info = networkCache[type];
+        if (info!=null && info != "undefined") {
+        	$("#device").val(info.DEVICE);
+        	$("#boot").val(info.ONBOOT);
+            $("#ip").val(info.IPADDR);
+            $("#netmask").val(info.NETMASK);
+            $("#gateway").val(info.GATEWAY);
+            /*$("#work").val(info.DUPLEX);
+            $("#speed").val(info.SPEED);*/
+        }
+    }
+
+    /**
+     * 保存网络配置
+     */
+    function save_network() {
+        var data = $("#networkForm").serialize();
+        layer.load();
+        $.ajax({
+            url: "/network/save_network",
+            type: "post",
+            data: data,
+            dataType: "JSON",
+            success: function(data) {
+                layer.closeAll('loading');
+                if (data!=null && data.code=="0") {
+                    layer.msg(data.msg);
+                    layer.closeAll('page');
+                    //updateNetworkCache(data.result);
+					networkList();
+                } else {
+                    layer.msg("服务器异常");
+                }
+            },
+            error: function(data) {
+                layer.closeAll('loading');
+                layer.msg("保存网络配置，服务器交互异常");
+            }
+        });
+    }
+</script>
+</html>

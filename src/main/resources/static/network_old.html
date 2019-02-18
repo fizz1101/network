@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="style/index.css">
+    <script type="text/javascript" src="script/jquery.min.js "></script>
+    <script type="text/javascript" src="script/request.js"></script>
+    <script type="text/javascript" src="script/network.js"></script>
+</head>
+<body>
+<div class="close" id="close"></div>
+<div class="new">
+    <form id="new-form" >
+        <span>目的地址：</span><input type="text" style="width: 66%" />
+        <span>子网掩码：</span><input type="text" style="width: 66%"/>
+        <span>网关：</span><input type="text"  style="width: 220px;"/>
+        <input type="button" value="提交" id="btn_route_save"/>
+    </form>
+</div>
+<div id="header">
+    <img src="images/header.png " alt="">
+</div>
+<div class="all">
+    <ul>
+       <li class="title">网络配置</li>
+    </ul>
+    <form id="networkForm" action="" style=" height:200px;margin-left: 100px;">
+        <ul>
+            <li> <span>网卡：</span>
+                <select id="networkType" name="name" style="width: 350px;height:30px;">
+                    <option value="">请选择</option>
+                </select>
+            </li>
+            <li>
+                <span>Ipv4地址：</span>
+                <input type="text" id="ip" name="ip" style="width: 325px;height:25px;" disabled="true" class="change">
+            </li>
+            <li>
+                <span>子网掩码：</span>
+                <input type="text" id="netmask" name="netmask" style="width: 325px;height:25px" disabled="true" class="change">
+            </li>
+            <li>
+                <span>网关：</span>
+                <input type="text" id="gateway" name="gateway" style="width: 350px;height:25px" disabled="true" class="change">
+            </li>
+        </ul>
+    </form>
+    <input type="button" value="编辑" id="revise" class="button">
+    <input type="button" value="保存" id="btn_network_save" class="button">
+    <ul>
+        <li class="title" style="margin-top: 20px;">路由列表</li>
+    </ul>
+    <table id="route_table">
+        <tr>
+            <th></th>
+            <th>目的地址</th>
+            <th>子网掩码</th>
+            <th>网关</th>
+        </tr>
+        <tr class="row">
+            <td><input type="checkbox" name="test" style="margin-left: 80px;"></td>
+            <td >default</td>
+            <td >0.0.0.0</td>
+            <td >192.168.1.1</td>
+        </tr>
+        <tr class="row">
+           <td><input type="checkbox" name="test" style="margin-left: 80px;"></td>
+            <td >192.168.1.0</td>
+            <td >255.255.255.0</td>
+            <td>0.0.0.0</td>
+        </tr>
+    </table>
+    <input type="button" id="new-built" class="button" value="新增">
+    <input type="button" id="amputate" class="button" value="删除">
+</div>
+</body>
+</html>

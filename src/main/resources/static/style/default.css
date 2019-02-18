@@ -1,0 +1,19 @@
+*{margin: 0; padding: 0}
+
+body {background-color: rgb(225,233,244);}
+
+table{font-size: 18px; text-align: center; width: 95%; max-width: 99%; margin: 10px auto 0; border: 1px solid gainsboro;}
+table tr{height: 40px; line-height: 40px;}
+table tr:nth-child(2n+1){background-color: rgb(225,233,250);}
+table tr:hover{background-color: rgb(225,250,250);}
+table th{font-size: 20px; color: white; background-color: #6196BB;}
+table input[type='checkbox']{margin-left: 5px;}
+
+form{width: 300px; margin: 15px 10px 0;}
+form div{margin-bottom: 5px;}
+form span{width: 30%; display: inline-block; text-align: right;}
+form input[type="text"]{width: 65%; text-align: left;}
+form input[type="password"]{width: 65%; text-align: left;}
+form select{width: 65%; text-align: left;}
+
+.clear{clear: both;}

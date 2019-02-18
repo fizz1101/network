@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>jQuery点击展开收缩树形菜单</title>
+    <link rel="stylesheet" href="style/font-awesome/css/font-awesome.min.css" />
+
+    <style type="text/css">
+        /**{margin: 0;padding: 0}*/
+        body{font-size: 12px;font-family: "宋体","微软雅黑";}
+        ul,li{list-style: none;}
+        a:link,a:visited{text-decoration: none;color: #fff;}
+        .sidebar{max-width: 100%; width: 210px; position: absolute; top: 50px; left: 0; bottom: 0; z-index: 0; background-color: #467ca2}
+        .menu{max-width: 100%; width: 210px;border-bottom:solid 1px #316a91; float: left; z-index: 1; position: relative;}
+        .menu ul li{background-color:#467ca2; border:solid 1px #316a91; border-bottom:0;}
+        .menu ul li a{padding-left: 10px;color: #fff; font-size:12px; display: block; font-weight:bold; height:36px;line-height: 36px;position: relative;}
+        .menu ul li .direction{position: absolute; right: 10px; line-height: 36px;}
+        .menu ul li ul{display: none;}
+        .menu ul li ul li { border-left:0; border-right:0; background-color:#6196bb; border-color:#467ca2;}
+        .menu ul li ul li ul{display: none;}
+        .menu ul li ul li a{ padding-left:20px;}
+        .menu ul li ul li ul li { background-color:#d6e6f1; border-color:#6196bb; }
+        .menu ul li ul li ul li a{ color:#316a91; padding-left:30px;}
+        .hover{background-color: #467CA2 !important;}
+        .select{background-color: blue !important;}
+        /*.clear{clear: both;}*/
+    </style>
+</head>
+<body>
+<section>
+    <div class="sidebar"></div>
+    <div class="menu">
+        <ul class="first">
+            <li><a href="#welcome"><i class="fa fa-home fa-fw"></i>&nbsp;首页</a></li>
+            <li><a href="#" class="inactive active"><i class="fa fa-cogs fa-fw"></i>&nbsp;网络配置<i class="fa fa-angle-right fa-fw direction"></i></a>
+                <ul style="display: none;">
+                    <li><a href="#network"><i class="fa fa-cog fa-fw"></i>&nbsp;接口配置</a></li>
+                    <li><a href="#route"><i class="fa fa-cog fa-fw"></i>&nbsp;路由配置</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="clear"></div>
+</section>
+</body>
+<!--<script type="text/javascript" src="script/jquery.min.js"></script>-->
+<script type="text/javascript">
+    $(document).ready(function() {
+    	var target = window.location.hash;
+    	if (target == "") {
+    		target = "#";
+    	}
+    	$("a[href="+target+"]").addClass("select");
+    	$("a[href="+target+"]").parent().parent().show();
+    	
+        $('.inactive').click(function(){
+            var className=$(this).parents('li').parents().attr('class');
+            if($(this).siblings('ul').css('display')=='none'){
+                if(className=="first"){
+                    $(this).parents('li').siblings('li').children('ul').parent('li').children('a').removeClass('inactives');
+                    $(this).parents('li').siblings('li').children('ul').slideUp(100);
+                    $(this).parents('li').children('ul').children('li').children('ul').parent('li').children('a').removeClass('inactives');
+                    $(this).parents('li').children('ul').children('li').children('ul').slideUp(100);
+
+                    $(".direction").removeClass('fa-angle-down');
+                    $(this).children('i').last().addClass('fa-angle-down');
+                }
+                $(this).addClass('inactives');
+                $(this).siblings('ul').slideDown(100);
+            }else{
+                $(this).removeClass('inactives');
+                $(this).siblings('ul').slideUp(100);
+
+                $(this).children('i').last().removeClass('fa-angle-down');
+                $(this).children('i').last().addClass('fa-angle-right');
+            }
+        })
+
+        $('.menu a').hover(function() {
+            $(this).parent().addClass('hover');
+        }, function() {
+            $(this).parent().removeClass('hover');
+        })
+        
+        $('.menu a').click(function() {
+        	$(".menu a").removeClass("select");
+        	$(this).addClass("select");
+        	var target = $(this).attr("href");
+        	target = target.replace("#", "");
+        	$("#main").load(target+".html");
+        })
+    });
+</script>
+</html>
