@@ -10,7 +10,8 @@ public enum ErrorCodeEnum implements EnumCommon {
     PARAM_TYPE_ERROR("40001", "参数类型异常"),
     PARAM_EMPTY("40002", "参数不存在或为空"),
     ERROR("50000", "系统异常"),
-    USERNOTEXIST("99990", "用户不存在或密码错误")
+    USERNOTEXIST("99990", "用户不存在或密码错误"),
+    ACCESSCODEERROR("99991","验证码错误")
     ;
 
     private String code;

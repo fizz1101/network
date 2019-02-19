@@ -6,44 +6,140 @@
     <link rel="stylesheet" href="style/default.css">
     <style>
         /*body {background-color: rgb(225,233,244);}*/
-        header{width:100%; height: 50px; line-height: 50px; text-align: center; background-color: white; position: relative;}
-        header img {position: absolute; top: 50%; margin-top: -20px;}
+        header {
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            background-color: white;
+            position: relative;
+        }
 
-        input[type='button']{cursor: pointer; background-color: #00C4B2; color: white; padding: 4px 10px; border-radius: 6px; border: 1px solid #cccccc; font-size: 12px; float: right}
-        #frame{width: 300px; margin: 200px auto 0;}
+        /*input[type='button']{cursor: pointer; background-color: #00C4B2; color: white; padding: 4px 10px; border-radius: 6px; border: 1px solid #cccccc; font-size: 12px; float: right}*/
+        /*#borderset{height: 150px;width: 400px; margin: 200px auto 0;border:1px solid #151515}*/
+        /*#frame{width: 300px; margin: 0px auto 0;}*/
+        .loginForm {
+            margin-top: 200px;
+            display: flex;
+            flex-direction: column;
+            width: 500px;
+            border: 1px solid black;
+        }
+
+        .loginFormInput {
+            width: 500px;
+            height: 60px;
+            display: flex;
+            flex-direction: row;
+            line-height: 60px;
+            border-bottom: 1px solid #a3a5a8;
+        }
+
+        .loginImage {
+            width:69px;
+            height: 149px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            line-height: 100px;
+        }
+
+        .inputForm {
+            height: 30px;
+            margin-top: 15px;
+            width: 100px;
+        }
+
+        .accessInput {
+            width: 10px;
+            height: 30px;
+            margin-top: 15px;
+        }
+
+        .loginButton {
+            height: 45px;
+            width: 340px;
+            margin: auto;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <img height="40px" src="images/logo.png"/>
-    </header>
+<header>
+    <img height="40px" src="images/logo.png" align="center">
+</header>
+<div id="borderset" align="center">
     <section id="frame">
-        <form id="loginForm" action="">
-            <div>
-                <span>用户名：</span>
-                <input type="text" id="username" name="username" placeholder="用户名">
+        <!--<form id="loginForm" action="">-->
+        <!--<div>-->
+        <!--<span>用户名：</span>-->
+        <!--<input type="text" id="username" name="username" placeholder="用户名">-->
+        <!--</div>-->
+        <!--<div>-->
+        <!--<span>密码：</span>-->
+        <!--<input type="password" id="password" name="password" placeholder="密码">-->
+        <!--</div>-->
+        <!--<div id="access">-->
+        <!--<span>验证码：</span>-->
+        <!--<input type="text" id="accesscode" name="accesscode" placeholder="验证码">-->
+        <!--</div>-->
+        <!--<div>-->
+        <!--<img id="accessimg" src="E:\\a.jpg" align="right" height="40px">-->
+        <!--<a href="###" id="change">换一张</a>-->
+        <!--</div>-->
+        <!--<input type="button" value="登录" id="btn_login">-->
+        <!--</form>-->
+        <form class="loginForm" id="loginForm2server">
+            <div class="loginFormInput">
+                <span>用户名:</span>
+                <input type="text" id="username" name="username" placeholder="用户名" class="inputForm">
             </div>
-            <div>
-                <span>密码：</span>
-                <input type="password" id="password" name="password" placeholder="密码">
+            <div class="loginFormInput">
+                <span>密码:</span>
+                <input type="password" id="password" name="password" placeholder="密码" class="inputForm">
+            </div>
+            <div class="loginFormInput">
+                <span>验证码:</span>
+                <input type="text" id="accesscode" name="accesscode" placeholder="验证码" class="accessInput">
+            </div>
+            <div class="loginFormInput">
+                <span>点击图片切换:</span>
+                <img src="" align="center" height="40px" id="getimage" style="margin-top: 10px">
+            </div>
+            <div class="loginFormInput">
+                <input type="button" value="登录" id="btn_login" class="loginButton">
             </div>
         </form>
-        <input type="button" value="登录" id="btn_login">
+
     </section>
+</div>
 </body>
 <script src="script/jquery.min.js"></script>
 <script src="script/layer/layer.js"></script>
 <script>
     $(function () {
+        getVerification();
         $("#btn_login").click(function () {
-            var data = $("#loginForm").serialize();
+            var data = $("#loginForm2server").serialize();
+            var username = $("#username").val();
+            var password = $("#password").val();
+            var accesscode = $("#accesscode").val();
+            console.log(data);
+            if (!username || !password) {
+                layer.msg("用户名密码不能为空");
+                return;
+            }
+            if (!accesscode) {
+                layer.msg("验证码为空");
+                return;
+            }
+
             $.ajax({
                 url: "/login",
                 type: "post",
                 data: data,
                 dataType: "json",
                 success: function (data) {
-                    if (data!=null && data.code=="0") {
+                    if (data != null && data.code == "0") {
                         window.location.href = "main.html";
                     } else {
                         layer.msg(data.msg);
@@ -54,6 +150,25 @@
                 }
             })
         })
+        $("#getimage").click(function () {
+            console.log("111")
+            getVerification();
+        })
     })
+
+    function getVerification() {
+        $.ajax({
+            url: "/verification",
+            type: "post",
+            data: "",
+            dataType: "json",
+            success: function (data) {
+                $("#getimage").attr("src", "data:image/jpg;base64," + data);
+            },
+            error: function(data){
+                layer.msg("验证码加载失败,请稍后重试");
+            }
+        })
+    }
 </script>
 </html>

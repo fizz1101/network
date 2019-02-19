@@ -77,6 +77,10 @@
             <span>网关：</span>
             <input type="text" id="gateway" name="gateway" />
         </div>
+		<div>
+			<input type="hidden" name="opt" value="add">
+			<p id="msg" align="center" style="color: red"></p>
+		</div>
 		<!--<div>
 			<span>工作模式：</span>
 			<select id="work" name="duplex">
@@ -132,9 +136,47 @@
 					success: function(index, layerno) {
 						//显示接口详细信息
 						setNetworkInfo(target);
+                        $("#ip").blur(function () {
+                            if (($("#ip").val())){
+                                var ipRegex = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])(\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])){3}$/;
+                                if(!ipRegex.test($("#ip").val())){
+                                    $("#msg").text("Ipv4地址格式错误");
+                                    //layer.msg("目的地址格式不正确");
+                                    return false;
+                                }
+                            }
+
+                        })
+
+                        $("#netmask").blur(function () {
+                            if ($("#netmask").val()) {
+                                var netRegex = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])(\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])){3}$/;
+                                if(!netRegex.test($("#netmask").val())){
+                                    $("#msg").text("子网掩码格式错误");
+                                    //layer.msg("子网掩码格式不正确");
+                                    return false;
+                                }
+                            }
+                        })
+
+                        $("#gateway").blur(function () {
+                            if ($("#gateway").val()) {
+                                var gateRegex = /^(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])(\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])){3}$/;
+                                if(!gateRegex.test($("#gateway").val())){
+                                    //layer.msg("网关格式不正确");
+                                    $("#msg").text("网关格式错误");
+                                    return false;
+                                }
+                            }
+                        })
+
 					},
 					btn: ['保存'],
 					yes: function(index, layerno) {
+                        if((!$("#ip").val())||(!$("#netmask").val())||(!$("#gateway").val())){
+                            $("#msg").text("信息填写不完整");
+                            return false;
+                        }
 						//保存接口配置
 						save_network();
 					},

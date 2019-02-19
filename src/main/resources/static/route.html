@@ -1,58 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Title</title>
-	<!--<link rel="stylesheet" href="script/layer/theme/default/layer.css">-->
-	<style>
-		/**{margin: 0; padding: 0;}*/
-		/*body {background-color: rgb(225,233,244);}*/
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!--<link rel="stylesheet" href="script/layer/theme/default/layer.css">-->
+    <style>
+        /**{margin: 0; padding: 0;}*/
+        /*body {background-color: rgb(225,233,244);}*/
 
-		/*table{font-size: 18px; text-align: center; width: 95%; max-width: 99%; margin: 10px auto 0; border: 1px solid gainsboro;}
-		table tr{height: 40px; line-height: 40px;}
-		table tr:nth-child(2n+1){background-color: rgb(225,233,250);}
-		table tr:hover{background-color: rgb(225,250,250);}
-		table th{font-size: 20px; color: white; background-color: #6196BB;}
-		table input[type='checkbox']{margin-left: 5px;}
+        /*table{font-size: 18px; text-align: center; width: 95%; max-width: 99%; margin: 10px auto 0; border: 1px solid gainsboro;}
+        table tr{height: 40px; line-height: 40px;}
+        table tr:nth-child(2n+1){background-color: rgb(225,233,250);}
+        table tr:hover{background-color: rgb(225,250,250);}
+        table th{font-size: 20px; color: white; background-color: #6196BB;}
+        table input[type='checkbox']{margin-left: 5px;}
 
-		form{width: 300px; margin: 15px 10px 0;}
-		form div{margin-bottom: 5px;}
-		form span{width: 30%; display: inline-block; text-align: right;}
-		form input[type="text"]{width: 65%; text-align: left;}
-		form select{width: 65%; text-align: left;}*/
+        form{width: 300px; margin: 15px 10px 0;}
+        form div{margin-bottom: 5px;}
+        form span{width: 30%; display: inline-block; text-align: right;}
+        form input[type="text"]{width: 65%; text-align: left;}
+        form select{width: 65%; text-align: left;}*/
 
-		#title{height: 36px; line-height: 36px; padding-left: 20px; font-size: 20px; font-weight: bold; color: white; background-color: #467ca2;}
-		#opt{float: right; margin-top: 10px; margin-right: 5%;}
-		#opt input[type='button']{cursor: pointer; background-color: #00C4B2; color: white; padding: 4px 10px; border-radius: 6px; border: 1px solid #cccccc; font-size: 12px;}
+        #title{height: 36px; line-height: 36px; padding-left: 20px; font-size: 20px; font-weight: bold; color: white; background-color: #467ca2;}
+        #opt{float: right; margin-top: 10px; margin-right: 5%;}
+        #opt input[type='button']{cursor: pointer; background-color: #00C4B2; color: white; padding: 4px 10px; border-radius: 6px; border: 1px solid #cccccc; font-size: 12px;}
 
-	</style>
+    </style>
 </head>
 <body>
-	<div id="title">路由列表</div>
-	<table id="routeTable" cellpadding="0" cellspacing="0">
-		<thead>
-			<tr>
-				<th></th>
-				<th>目的地址</th>
-				<th>子网掩码</th>
-				<th>网关</th>
-				<th>接口</th>
-			</tr>
-		</thead>
-		<tbody id="tbody">
-		</tbody>
-	</table>
-	<div id="opt">
-		<input type="button" value="新增" id="add" />
-		<input type="button" value="删除" id="del" />
-	</div>
+<div id="title">路由列表</div>
+<table id="routeTable" cellpadding="0" cellspacing="0">
+    <thead>
+    <tr>
+        <th></th>
+        <th>目的地址</th>
+        <th>子网掩码</th>
+        <th>网关</th>
+        <th>接口</th>
+    </tr>
+    </thead>
+    <tbody id="tbody">
+    </tbody>
+</table>
+<div id="opt">
+    <input type="button" value="新增" id="add" />
+    <input type="button" value="删除" id="del" />
+</div>
 </body>
 <div id="routeDialog" style="display: none;">
-	<form id="routeForm" onsubmit="check(this)">
+    <form id="routeForm" onsubmit="check(this)">
         <div>
             <span>网卡：</span>
-			<select id="networkType" name="device"></select>
-		</div>
+            <select id="networkType" name="device"></select>
+        </div>
         <div>
             <span>目的地址：</span>
             <input type="text" id="ip" name="ipAddr" />
@@ -65,46 +65,86 @@
             <span>网关：</span>
             <input type="text" id="gateway" name="gateway" />
         </div>
-		<div>
-			<input type="hidden" name="opt" value="add">
-		</div>
+        <div>
+            <input type="hidden" name="opt" value="add">
+            <p id="msg" align="center" style="color: red"></p>
+        </div>
     </form>
 </div>
-<!--<script src="script/jquery.min.js"></script>-->
+<script src="script/jquery.min.js"></script>
 <script src="script/layer/layer.js"></script>
 <script>
-	var routeCache = {};
+    var routeCache = {};
 
-	$(function() {
-		//初始化加载数据
-		initData();
+    $(function() {
+        //初始化加载数据
+        initData();
 
-		//选行记录
+        //选行记录
         $("#tbody").on('click', 'tr', function() {
             $("input[type='checkbox']", this).click();
-		})
+        })
 
-		//新增按钮点击
-		$("#add").click(function() {
-		    $("#routeForm")[0].reset();
-			layer.open({
-				type: 1,
-				title: "新增路由信息",
-				content: $("#routeDialog"),
-				shadeClose: true,
-				success: function(index, layerno) {
-					//成功弹框后操作
-				},
-				btn: ['保存'],
-				yes: function(index, layerno) {
-					//保存接口配置
-					save_route();
-				},
-				cancel: function() {
-					//layer.msg("关闭弹窗");
-				}
-			});
-		})
+        //新增按钮点击
+        $("#add").click(function() {
+            $("#routeForm")[0].reset();
+            layer.open({
+                type: 1,
+                title: "新增路由信息",
+                content: $("#routeDialog"),
+                shadeClose: true,
+                success: function(index, layerno) {
+                    console.log("111")
+                    //成功弹框后操作
+                    $("#ip").blur(function () {
+                        if (($("#ip").val())){
+                            var ipRegex = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])(\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])){3}$/;
+                            if(!ipRegex.test($("#ip").val())){
+                                $("#msg").text("目的地址格式错误");
+                                //layer.msg("目的地址格式不正确");
+                                return false;
+                            }
+                        }
+
+                    })
+
+                    $("#netmask").blur(function () {
+                        if ($("#netmask").val()) {
+                            var netRegex = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])(\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])){3}$/;
+                            if(!netRegex.test($("#netmask").val())){
+                                $("#msg").text("子网掩码格式错误");
+                                //layer.msg("子网掩码格式不正确");
+                                return false;
+                            }
+                        }
+                    })
+
+                    $("#gateway").blur(function () {
+                        if ($("#gateway").val()) {
+                            var gateRegex = /^(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])(\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])){3}$/;
+                            if(!gateRegex.test($("#gateway").val())){
+                                //layer.msg("网关格式不正确");
+                                $("#msg").text("网关格式错误");
+                                return false;
+                            }
+                        }
+                    })
+                },
+                btn: ['保存'],
+                yes: function (index, layerno) {
+                    if((!$("#ip").val())||(!$("#netmask").val())||(!$("#gateway").val())){
+                        $("#msg").text("信息填写不完整");
+                        return false;
+                    }
+                    //保存接口配置
+                    save_route();
+                },
+                cancel: function() {
+                    //layer.msg("关闭弹窗");
+                }
+            });
+        })
+
 
         //删除按钮点击
         $("#del").click(function() {
@@ -114,21 +154,21 @@
                 layer.confirm('是否确认删除', del_route(ids))
             } else {
                 layer.msg("请选择数据行");
-			}
+            }
         })
-	})
-	
-	//初始化加载数据
-	function initData() {
-		networkType();
-		routeList();
-	}
-	
-	/**
+    })
+
+    //初始化加载数据
+    function initData() {
+        networkType();
+        routeList();
+    }
+
+    /**
      * 校验内容
      */
     function check(obj) {
-		return true;
+        return true;
     }
 
     /**
@@ -177,21 +217,21 @@
                     cacheRouteList(data.result.row);
                 } else {
                     layer.msg(data.msg);
-				}
+                }
             },
             error: function () {
                 layer.msg("获取路由配置，服务器交互异常");
             }
         })
     }
-    
+
     /**
      * 展示路由列表
      */
     function showRouteList(data) {
-    	var tableBody = "";
-    	for (var key in data) {
-    		//生成每行的数据展示
+        var tableBody = "";
+        for (var key in data) {
+            //生成每行的数据展示
             tableBody += "<tr>";
             tableBody += "<td><input type='checkbox' data-index='"+key+"' /></td>";
             tableBody += "<td>"+data[key].ipAddr+"</td>";
@@ -199,18 +239,18 @@
             tableBody += "<td>"+data[key].gateway+"</td>";
             tableBody += "<td>"+data[key].device+"</td>";
             tableBody += "</tr>";
-    	}
-    	$("#tbody").html(tableBody);
+        }
+        $("#tbody").html(tableBody);
     }
 
     /**
-	 * 缓存路由列表数据
-	 */
+     * 缓存路由列表数据
+     */
     function cacheRouteList(data) {
         for (var key in data) {
             routeCache[key] = data[key];
-		}
-	}
+        }
+    }
 
     /**
      * 新增路由
@@ -229,7 +269,7 @@
                     layer.msg(data.msg);
                     layer.closeAll('page');
                     //updateRouteCache(data.result);
-					routeList();
+                    routeList();
                 } else {
                     layer.msg(data.msg);
                 }
@@ -249,13 +289,13 @@
         var data = routeCache[ids];
         data["opt"] = "del";
         layer.load();
-		$.ajax({
-		    url: "/network/save_route",
-			type: "post",
-			data: data,
-			dataType: "json",
-			success: function (data) {
-				layer.closeAll("loading");
+        $.ajax({
+            url: "/network/save_route",
+            type: "post",
+            data: data,
+            dataType: "json",
+            success: function (data) {
+                layer.closeAll("loading");
                 if (data!=null && data.code=="0") {
                     layer.msg(data.msg);
                     routeList();
@@ -263,9 +303,9 @@
                     layer.msg(data.msg);
                 }
             },
-			error: function () {
+            error: function () {
                 layer.closeAll("loading");
-				layer.msg("删除路由配置，服务器交互异常");
+                layer.msg("删除路由配置，服务器交互异常");
             }
         })
     }

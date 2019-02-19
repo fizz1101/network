@@ -25,6 +25,24 @@
     $(function () {
         var user = sessionStorage.getItem("user");
         $("#name").val(user);
+        $("#logout").click(function () {
+            $.ajax({
+                url: "/logout",
+                type: "post",
+                data: "",
+                dataType: "json",
+                success: function (data) {
+                    if (data != null && data.code == "0") {
+                        window.location.href = "login.html";
+                    } else {
+                        layer.msg("登出失败,请重试");
+                    }
+                },
+                error: function(data){
+                    layer.msg("退出失败,请重试");
+                }
+            })
+        })
     })
 </script>
 </html>
