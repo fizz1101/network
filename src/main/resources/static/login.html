@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="style/default.css">
+    <link rel="stylesheet" href="/static/style/default.css">
     <style>
         /*body {background-color: rgb(225,233,244);}*/
         header {
@@ -65,7 +65,7 @@
 </head>
 <body>
 <header>
-    <img height="40px" src="images/logo.png" align="center">
+    <img height="40px" src="/static/images/logo.png" align="center">
 </header>
 <div id="borderset" align="center">
     <section id="frame">
@@ -113,8 +113,9 @@
     </section>
 </div>
 </body>
-<script src="script/jquery.min.js"></script>
-<script src="script/layer/layer.js"></script>
+<script src="/static/script/jquery.min.js"></script>
+<script src="/static/script/layer/layer.js"></script>
+<script src="/static/script/md5.js"></script>
 <script>
     $(function () {
         getVerification();
@@ -132,7 +133,11 @@
                 layer.msg("验证码为空");
                 return;
             }
-
+            //对密码做md5加密
+            // var reg = /password=(.+?)(?=(&|$))/gi;
+            var reg = eval("/&?password=([^\\&]+)/");
+            var pwd = data.match(reg)[1];
+            data = data.replace(pwd, hex_md5(pwd));
             $.ajax({
                 url: "/login",
                 type: "post",

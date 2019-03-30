@@ -90,7 +90,7 @@ public class ParamFilter implements Filter {
                             }
                             break;
                     }
-                    logger.info("IP："+httpServletRequest.getRemoteAddr()+"；URL："+url+"；PARAM："+dataMap);
+                    logger.info("Http请求 IP："+httpServletRequest.getRemoteAddr()+"；URL："+url+"；PARAM："+dataMap);
                     myRequest.getSession().setAttribute("dataMap", dataMap);
                     filterChain.doFilter(myRequest, servletResponse);
                     return;

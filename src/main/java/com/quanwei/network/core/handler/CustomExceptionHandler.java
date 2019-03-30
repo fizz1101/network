@@ -6,6 +6,9 @@ import com.quanwei.network.core.exception.ParamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -34,6 +37,30 @@ public class CustomExceptionHandler {
         }else{
             logger.error(ex.getMessage() ,ex);
         }
+        return responseEntity;
+    }
+
+    /**
+     * 统一处理抛出的参数值校验异常
+     * @param ex
+     * @return
+     */
+    @ResponseBody
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity MethodValidException(MethodArgumentNotValidException ex) {
+        BindingResult bindResult = ex.getBindingResult();
+        StringBuffer errorMsg = new StringBuffer(bindResult.getFieldErrors().size() * 16);
+        errorMsg.append("Invalid Request:");
+        for (int i=0; i<bindResult.getFieldErrors().size(); i++) {
+            if (i > 0) {
+                errorMsg.append(",");
+            }
+            FieldError fieldError = bindResult.getFieldErrors().get(i);
+            errorMsg.append(fieldError.getField());
+            errorMsg.append(":");
+            errorMsg.append(fieldError.getDefaultMessage());
+        }
+        ResponseEntity responseEntity = new ResponseEntity(ErrorCodeEnum.PARAM_VALID_ERROR);
         return responseEntity;
     }
 

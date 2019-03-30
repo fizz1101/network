@@ -2,19 +2,12 @@ package com.quanwei.network.core.controller;
 
 import com.quanwei.network.core.Enum.ErrorCodeEnum;
 import com.quanwei.network.core.entity.ResponseEntity;
-import com.quanwei.network.core.util.DataUtil;
-import com.quanwei.network.core.util.JacksonUtil;
-import com.quanwei.network.core.util.ParamUtil;
-import com.quanwei.network.core.util.VerificationCodeUtil;
-import jdk.nashorn.internal.runtime.JSONFunctions;
+import com.quanwei.network.core.util.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.Map;
 
 @RestController
@@ -49,6 +42,7 @@ public class LoginController extends BaseController {
         
         Map<String, Object> user = DataUtil.getUser(username);
         if (user != null && user.size() > 0) {
+            password = MD5Util.getMd5Str(password+"telincn");
             if (password.equalsIgnoreCase((String) user.get("password"))) {
                 request.getSession().setAttribute("user", user);
                 responseEntity = new ResponseEntity(ErrorCodeEnum.SUCCESS);
